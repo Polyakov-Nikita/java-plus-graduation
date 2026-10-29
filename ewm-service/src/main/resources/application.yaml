@@ -1,0 +1,36 @@
+server:
+  port: 8080
+
+logging:
+  level:
+    org:
+      zalando:
+        logbook:
+          Logbook: TRACE
+
+spring:
+  main:
+    banner-mode: OFF
+    log-startup-info: false
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+
+    properties:
+      hibernate:
+        format_sql: true
+
+  sql:
+    init:
+      mode: always
+
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:6542/ewm
+    username: ewm
+    password: ewm
+
+stats:
+  server:
+    url: http://localhost:9090
