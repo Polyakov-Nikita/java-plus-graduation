@@ -1,8 +1,0 @@
-spring:
-  main:
-    banner-mode: OFF
-    log-startup-info: false
-
-  datasource:
-    driverClassName: org.h2.Driver
-    url: jdbc:h2:mem:stats
