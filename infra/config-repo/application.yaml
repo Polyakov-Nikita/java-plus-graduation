@@ -1,0 +1,14 @@
+server:
+  port: 0
+
+logging:
+  level:
+    org:
+      zalando:
+        logbook:
+          Logbook: TRACE
+
+spring:
+  main:
+    banner-mode: off
+    log-startup-info: false
