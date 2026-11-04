@@ -10,8 +10,6 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 @SpringBootApplication
 @ConfigurationPropertiesScan
 public class ExploreWithMeMainService {
-    public static final String APP_NAME = "ewm-main-service";
-
     public static void main(String[] args) {
         SpringApplication.run(ExploreWithMeMainService.class, args);
         ((ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME))

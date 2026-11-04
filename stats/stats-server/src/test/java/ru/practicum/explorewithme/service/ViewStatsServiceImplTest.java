@@ -7,7 +7,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import ru.practicum.explorewithme.exception.WrongDateIntervalException;
 import ru.practicum.explorewithme.repository.EndpointHitRepository;
-import ru.practicum.explorewithme.test.ServiceTest;
+import ru.practicum.test.utils.ServiceTest;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,8 +21,9 @@ public class ViewStatsServiceImplTest extends ServiceTest {
     @Test
     public void getStatistics_StartAfterEnd_WrongDateIntervalException() {
         // Arrange
-        LocalDateTime start = NOW.minusDays(1);
-        LocalDateTime end = NOW.minusDays(2);
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime start = now.minusDays(1);
+        LocalDateTime end = now.minusDays(2);
         List<String> uris = List.of("");
         boolean unique = true;
 
@@ -37,8 +38,9 @@ public class ViewStatsServiceImplTest extends ServiceTest {
     @Test
     public void getStatistics_UniqueTrue_UniqueMethodCalls() {
         // Arrange
-        LocalDateTime start = NOW.minusDays(2);
-        LocalDateTime end = NOW.minusDays(1);
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime start = now.minusDays(2);
+        LocalDateTime end = now.minusDays(1);
         List<String> uris = List.of("");
         boolean unique = true;
 
@@ -56,8 +58,9 @@ public class ViewStatsServiceImplTest extends ServiceTest {
     @Test
     public void getStatistics_UniqueFalse_UsualMethodCalls() {
         // Arrange
-        LocalDateTime start = NOW.minusDays(2);
-        LocalDateTime end = NOW.minusDays(1);
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime start = now.minusDays(2);
+        LocalDateTime end = now.minusDays(1);
         List<String> uris = List.of("");
         boolean unique = false;
 
@@ -75,8 +78,9 @@ public class ViewStatsServiceImplTest extends ServiceTest {
     @Test
     public void getStatistics_NullUris_UniqueFalse_UsualMethodCalls() {
         // Arrange
-        LocalDateTime start = NOW.minusDays(2);
-        LocalDateTime end = NOW.minusDays(1);
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime start = now.minusDays(2);
+        LocalDateTime end = now.minusDays(1);
         boolean unique = false;
 
         // Act
@@ -92,8 +96,9 @@ public class ViewStatsServiceImplTest extends ServiceTest {
     @Test
     public void getStatistics_NullUris_UniqueTrue_UniqueMethodCalls() {
         // Arrange
-        LocalDateTime start = NOW.minusDays(2);
-        LocalDateTime end = NOW.minusDays(1);
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime start = now.minusDays(2);
+        LocalDateTime end = now.minusDays(1);
         boolean unique = true;
 
         // Act

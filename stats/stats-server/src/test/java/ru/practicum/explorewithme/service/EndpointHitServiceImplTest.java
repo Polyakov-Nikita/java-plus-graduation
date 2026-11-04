@@ -8,7 +8,9 @@ import ru.practicum.explorewithme.entity.EndpointHit;
 import ru.practicum.explorewithme.hit.EndpointHitRequest;
 import ru.practicum.explorewithme.repository.EndpointHitRepository;
 import ru.practicum.explorewithme.service.mapper.EndpointHitMapper;
-import ru.practicum.explorewithme.test.ServiceTest;
+import ru.practicum.test.utils.ServiceTest;
+
+import java.time.LocalDateTime;
 
 public class EndpointHitServiceImplTest extends ServiceTest {
     private final EndpointHitMapper endpointHitMapper = new EndpointHitMapper();
@@ -25,7 +27,12 @@ public class EndpointHitServiceImplTest extends ServiceTest {
     @Test
     public void saveHit_saveCalls() {
         // Arrange
-        EndpointHitRequest request = buildEndpointHitRequest();
+        EndpointHitRequest request = EndpointHitRequest.builder()
+                .app("ewm-main-service")
+                .uri("/events/1")
+                .ip("192.163.0.1")
+                .timestamp(LocalDateTime.now().plusDays(1))
+                .build();
 
         // Act
         hitService.saveHit(request);
