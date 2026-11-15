@@ -1,7 +1,7 @@
 package ru.practicum.explorewithme.event.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -13,17 +13,19 @@ import org.springframework.web.server.ResponseStatusException;
 import ru.practicum.explorewithme.StatsClient;
 import ru.practicum.explorewithme.common.dto.*;
 import ru.practicum.explorewithme.common.pagination.OffsetPageRequest;
-import ru.practicum.explorewithme.common.service.CategoryService;
-import ru.practicum.explorewithme.common.service.EventService;
-import ru.practicum.explorewithme.common.service.RequestService;
-import ru.practicum.explorewithme.common.service.UserService;
-import ru.practicum.explorewithme.event.dto.EventExtra;
+import ru.practicum.explorewithme.event.dto.*;
 import ru.practicum.explorewithme.event.entity.Event;
 import ru.practicum.explorewithme.event.entity.LocationEmbeddable;
 import ru.practicum.explorewithme.event.exception.EarlyDateException;
 import ru.practicum.explorewithme.event.exception.EventNotFoundException;
 import ru.practicum.explorewithme.event.exception.UnavailableUpdateEventException;
 import ru.practicum.explorewithme.event.exception.WrongDateIntervalException;
+import ru.practicum.explorewithme.event.feign.EventCategoryClient;
+import ru.practicum.explorewithme.event.feign.EventRequestClient;
+import ru.practicum.explorewithme.event.feign.EventUserClient;
+import ru.practicum.explorewithme.event.feign.dto.EventCategoryDto;
+import ru.practicum.explorewithme.event.feign.dto.EventRequestDto;
+import ru.practicum.explorewithme.event.feign.dto.EventUserDto;
 import ru.practicum.explorewithme.event.mapper.EventMapper;
 import ru.practicum.explorewithme.event.mapper.LocationMapper;
 import ru.practicum.explorewithme.event.repository.EventRepository;
@@ -39,7 +41,7 @@ import java.util.stream.Collectors;
 import static ru.practicum.explorewithme.common.controller.ControllerConstants.URL_EVENTS;
 
 @Service
-//@RequiredArgsConstructor
+@RequiredArgsConstructor
 @Transactional(readOnly = true)
 @Slf4j
 public class EventServiceImpl implements EventService {
@@ -47,26 +49,10 @@ public class EventServiceImpl implements EventService {
     private static final int ADMIN_MIN_OFFSET = 1;
 
     private final EventRepository eventRepository;
-    private final CategoryService categoryService;
-    private final UserService userService;
-    private final RequestService requestService;
+    private final EventCategoryClient eventCategoryClient;
+    private final EventUserClient eventUserClient;
+    private final EventRequestClient eventRequestClient;
     private final StatsClient statsClient;
-
-    public EventServiceImpl(
-            EventRepository eventRepository,
-            @Lazy
-            CategoryService categoryService,
-            UserService userService,
-            @Lazy
-            RequestService requestService,
-            StatsClient statsClient
-    ) {
-        this.eventRepository = eventRepository;
-        this.categoryService = categoryService;
-        this.userService = userService;
-        this.requestService = requestService;
-        this.statsClient = statsClient;
-    }
 
     @Override
     public List<EventDto> getEvents(long userId, int from, int size) {
@@ -84,11 +70,11 @@ public class EventServiceImpl implements EventService {
         Map<String, Long> viewsByUri = getStats(statsClient, events);
         List<EventDto> mappedEvents = events.stream()
                 .map(event -> {
-                    CategoryDto categoryDto = categoryService.getCategory(event.getCategoryId());
-                    UserShortDto initiator = userService.getUser(event.getInitiatorId());
+                    EventCategoryDto category = eventCategoryClient.getCategoryById(event.getCategoryId());
+                    EventUserDto initiator = eventUserClient.getUserById(event.getInitiatorId());
                     Location location = LocationMapper.toLocation(event.getLocation());
                     EventDto eventDto = EventMapper.toEventDto(event);
-                    setNestedClassesValues(eventDto, categoryDto, initiator, location);
+                    setNestedClassesValues(eventDto, category, initiator, location);
                     return eventDto;
                 })
                 .toList();
@@ -125,8 +111,8 @@ public class EventServiceImpl implements EventService {
     }
 
     private void setNestedClassesValues(EventDto event,
-                                        CategoryDto category,
-                                        UserShortDto initiator,
+                                        EventCategoryDto category,
+                                        EventUserDto initiator,
                                         Location location) {
         event.setCategory(category);
         event.setInitiator(initiator);
@@ -155,9 +141,9 @@ public class EventServiceImpl implements EventService {
 
     private EventExtra aggregateExtra(long userId, NewEventDto newEventDto) {
         EventExtra.EventExtraBuilder extraBuilder = EventExtra.builder();
-        CategoryDto categoryInfo = categoryService.getCategory(newEventDto.getCategory());
+        EventCategoryDto categoryInfo = eventCategoryClient.getCategoryById(newEventDto.getCategory());
         extraBuilder.category(categoryInfo);
-        UserShortDto userInfo = userService.getUser(userId);
+        EventUserDto userInfo = eventUserClient.getUserById(userId);
         extraBuilder.initiator(userInfo);
         return extraBuilder.build();
     }
@@ -192,14 +178,6 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public EventDto getEvent(long eventId) {
-        log.trace("Инициировано получение события с id {}", eventId);
-        Event event = findEvent(eventId);
-        log.debug("Получено событие {}", event);
-        return getEventsWithStats(List.of(event), statsClient).getFirst();
-    }
-
-    @Override
     @Transactional
     public EventDto updateEvent(long userId, long eventId, UserUpdateEventDto update) {
         log.trace("Инициировано обновление события с id {} пользователем с id {}, изменения - {}", eventId, userId, update);
@@ -231,11 +209,11 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public List<RequestDto> getRequests(long userId, long eventId) {
+    public List<EventRequestDto> getRequests(long userId, long eventId) {
         log.trace("Инициировано получение запроса пользователем с id {} к событию с id {}", userId, eventId);
         checkEventExistence(userId, eventId);
         Event event = findEvent(eventId);
-        return requestService.getRequestsToUsersEvent(EventMapper.toEventDto(event));
+        return eventRequestClient.getRequests(event.getId());
     }
 
     private void checkEventExistence(long userId, long eventId) {
@@ -476,16 +454,16 @@ public class EventServiceImpl implements EventService {
     }
 
     private ChangedRequestStatusesDto changeRequestStatuses(Event event, List<Long> requestsToConfirm, List<Long> requestsToReject) {
-        List<RequestDto> confirmedRequests;
+        List<EventRequestDto> confirmedRequests;
         if (!requestsToConfirm.isEmpty()) {
-            confirmedRequests = requestService.changeRequestStatuses(requestsToConfirm, RequestStatus.CONFIRMED);
+            confirmedRequests = eventRequestClient.changeRequestStatuses(requestsToConfirm, RequestStatus.CONFIRMED);
         } else {
             confirmedRequests = List.of();
         }
 
-        List<RequestDto> rejectedRequests;
+        List<EventRequestDto> rejectedRequests;
         if (!requestsToReject.isEmpty()) {
-            rejectedRequests = requestService.changeRequestStatuses(requestsToReject, RequestStatus.REJECTED);
+            rejectedRequests = eventRequestClient.changeRequestStatuses(requestsToReject, RequestStatus.REJECTED);
         } else {
             rejectedRequests = List.of();
         }
@@ -521,7 +499,7 @@ public class EventServiceImpl implements EventService {
     }
 
     private ChangedRequestStatusesDto processRequestsWithActionStatusRejected(UpdateRequestStatusDto update) {
-        List<RequestDto> rejectedRequests = requestService.changeRequestStatuses(update.getRequestIds(), RequestStatus.REJECTED);
+        List<EventRequestDto> rejectedRequests = eventRequestClient.changeRequestStatuses(update.getRequestIds(), RequestStatus.REJECTED);
 
         return ChangedRequestStatusesDto.builder()
                 .confirmedRequests(List.of())
@@ -530,39 +508,27 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public Boolean existsByCategoryId(long catId) {
+    public InternalEventDto getEventInternal(long eventId) {
+        log.trace("Инициировано получение события с id {}", eventId);
+        Event event = findEvent(eventId);
+        log.debug("Получено событие {}", event);
+        return EventMapper.toInternalEventDto(event);
+    }
+
+    @Override
+    public Boolean existsByCategoryIdInternal(long catId) {
         return eventRepository.existsByCategoryId(catId);
     }
 
     @Override
-    @Transactional
-    public void incrementConfirmedRequests(long eventId) {
-        log.trace("Инициировано увеличение на 1 числа подтвержденных запросов к событию с id {}", eventId);
-        Event event = findEvent(eventId);
-        int confirmedRequests = event.getConfirmedRequests() + 1;
-        event.setConfirmedRequests(confirmedRequests);
-        eventRepository.save(event);
-    }
-
-    @Override
-    @Transactional
-    public void decrementConfirmedRequests(long eventId) {
-        log.trace("Инициировано уменьшение на 1 числа подтвержденных запросов к событию с id {}", eventId);
-        Event event = findEvent(eventId);
-        int confirmedRequests = event.getConfirmedRequests() - 1;
-        event.setConfirmedRequests(confirmedRequests);
-        eventRepository.save(event);
-    }
-
-    @Override
-    public List<EventDto> getEvents(List<Long> ids) {
+    public List<InternalEventDto> getEventsByIdsInternal(List<Long> ids) {
         if (ids.isEmpty()) {
             return List.of();
         }
         List<Event> result = eventRepository.findByIdIn(ids);
         checkEventsPresent(ids, result);
         return result.stream()
-                .map(EventMapper::toEventDto)
+                .map(EventMapper::toInternalEventDto)
                 .toList();
     }
 
@@ -579,16 +545,22 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public Map<Long, EventDto> getEventMap(List<Long> ids) {
-        if (ids.isEmpty()) {
-            return Map.of();
-        }
-        List<Event> events = eventRepository.findByIdIn(ids);
-        checkEventsPresent(ids, events);
-        return events.stream()
-                .collect(Collectors.toMap(
-                        Event::getId,
-                        EventMapper::toEventDto
-                ));
+    @Transactional
+    public void incrementConfirmedRequestsInternal(long eventId) {
+        log.trace("Инициировано увеличение на 1 числа подтвержденных запросов к событию с id {}", eventId);
+        Event event = findEvent(eventId);
+        int confirmedRequests = event.getConfirmedRequests() + 1;
+        event.setConfirmedRequests(confirmedRequests);
+        eventRepository.save(event);
+    }
+
+    @Override
+    @Transactional
+    public void decrementConfirmedRequestsInternal(long eventId) {
+        log.trace("Инициировано уменьшение на 1 числа подтвержденных запросов к событию с id {}", eventId);
+        Event event = findEvent(eventId);
+        int confirmedRequests = event.getConfirmedRequests() - 1;
+        event.setConfirmedRequests(confirmedRequests);
+        eventRepository.save(event);
     }
 }

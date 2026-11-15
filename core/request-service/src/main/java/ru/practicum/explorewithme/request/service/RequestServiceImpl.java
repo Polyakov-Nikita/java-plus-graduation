@@ -4,23 +4,21 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.explorewithme.common.dto.*;
-import ru.practicum.explorewithme.common.service.EventService;
-import ru.practicum.explorewithme.common.service.RequestService;
-import ru.practicum.explorewithme.common.service.UserService;
-import ru.practicum.explorewithme.request.dto.RequestExtra;
+import ru.practicum.explorewithme.common.dto.EventStatus;
+import ru.practicum.explorewithme.common.dto.RequestStatus;
+import ru.practicum.explorewithme.request.dto.RequestDto;
 import ru.practicum.explorewithme.request.entity.Request;
 import ru.practicum.explorewithme.request.exception.ConfirmedRequestException;
 import ru.practicum.explorewithme.request.exception.DuplicatedIdsException;
 import ru.practicum.explorewithme.request.exception.RequestNotFoundException;
 import ru.practicum.explorewithme.request.exception.UnavailableUpdateRequestException;
+import ru.practicum.explorewithme.request.feign.RequestEventClient;
+import ru.practicum.explorewithme.request.feign.dto.RequestEventDto;
 import ru.practicum.explorewithme.request.mapper.RequestMapper;
 import ru.practicum.explorewithme.request.repository.RequestRepository;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -29,45 +27,21 @@ import java.util.Optional;
 @Slf4j
 public class RequestServiceImpl implements RequestService {
     private final RequestRepository requestRepository;
-    private final EventService eventService;
-    private final UserService userService;
+    private final RequestEventClient requestEventClient;
 
     @Override
-    public List<RequestDto> getRequestsToUsersEvent(EventDto event) {
-        log.trace("Инициировано получение запросов к событию {}", event);
-        List<Request> requests = requestRepository.findByEventId(event.getId());
+    public List<RequestDto> getRequestsInternal(long eventId) {
+        log.trace("Инициировано получение запросов к событию с id {}", eventId);
+        List<Request> requests = requestRepository.findByEventId(eventId);
         log.debug("Получен список запросов {}", requests);
-        Map<Long, RequestExtra> extraMap = aggregateExtraMap(requests, event);
-        List<RequestDto> result = requests.stream()
+        return requests.stream()
                 .map(RequestMapper::toRequestDto)
                 .toList();
-        result.forEach(request -> addExtra(request, extraMap.get(request.getId())));
-        return result;
-    }
-
-    private Map<Long, RequestExtra> aggregateExtraMap(List<Request> requests, EventDto event) {
-        Map<Long, RequestExtra> result = new HashMap<>();
-        Map<Long, UserShortDto> usersMap = userService.getUsersMap(
-                requests.stream()
-                        .map(Request::getRequesterId)
-                        .toList()
-        );
-        requests.forEach(
-                request -> {
-                    UserShortDto requester = usersMap.get(request.getRequesterId());
-                    RequestExtra extraInfo = RequestExtra.builder()
-                            .event(event)
-                            .requester(requester)
-                            .build();
-                    result.put(request.getId(), extraInfo);
-                }
-        );
-        return result;
     }
 
     @Override
     @Transactional
-    public List<RequestDto> changeRequestStatuses(List<Long> requestIds, RequestStatus status) {
+    public List<RequestDto> changeRequestStatusesInternal(List<Long> requestIds, RequestStatus status) {
         log.trace("Инициировано изменение статусов на {} к списку запросов {}", status, requestIds);
         List<Request> requests = requestRepository.findByIdIn(requestIds);
         checkNonPendingRequests(requests);
@@ -93,16 +67,15 @@ public class RequestServiceImpl implements RequestService {
     public RequestDto create(long userId, long eventId) {
         log.trace("Инициировано создание запроса у пользователя с id {} для события с id {}", userId, eventId);
         checkDuplicatedIds(userId, eventId);
-        RequestExtra extraInfo = aggregateExtra(userId, eventId);
-        Request request = buildRequest(extraInfo);
-        Request saved = requestRepository.save(request);
+        RequestEventDto event = requestEventClient.getEventById(eventId);
+        checkEvent(event, userId);
+        Request request = buildRequest(event, userId);
         if (request.getStatus().equals(RequestStatus.CONFIRMED)) {
-            eventService.incrementConfirmedRequests(request.getEventId());
+            requestEventClient.incrementConfirmedRequests(request.getEventId());
         }
+        Request saved = requestRepository.save(request);
         log.debug("Создан запрос {}", saved);
-        RequestDto result = RequestMapper.toRequestDto(saved);
-        addExtra(result, extraInfo);
-        return result;
+        return RequestMapper.toRequestDto(saved);
     }
 
     private void checkDuplicatedIds(long userId, long eventId) {
@@ -111,23 +84,8 @@ public class RequestServiceImpl implements RequestService {
         }
     }
 
-    private RequestExtra aggregateExtra(long userId, long eventId) {
-        RequestExtra.RequestExtraBuilder extraBuilder = RequestExtra.builder();
-        EventDto eventDto = eventService.getEvent(eventId);
-        checkEvent(eventDto, userId);
-        extraBuilder.event(eventDto);
-        UserShortDto userDto = userService.getUser(userId);
-        extraBuilder.requester(userDto);
-        return extraBuilder.build();
-    }
-
-    private void addExtra(RequestDto request, RequestExtra extraInfo) {
-        request.setEvent(extraInfo.getEvent());
-        request.setRequester(extraInfo.getRequester());
-    }
-
-    private void checkEvent(EventDto event, long userId) {
-        if (event.getInitiator().getId() == userId) {
+    private void checkEvent(RequestEventDto event, long userId) {
+        if (event.getInitiatorId() == userId) {
             throw new UnavailableUpdateRequestException(event.getId());
         }
         if (!event.getStatus().equals(EventStatus.PUBLISHED)) {
@@ -138,18 +96,18 @@ public class RequestServiceImpl implements RequestService {
         }
     }
 
-    private Request buildRequest(RequestExtra extraInfo) {
-        RequestStatus status = chooseRequestStatus(extraInfo.getEvent());
+    private Request buildRequest(RequestEventDto event, Long requesterId) {
+        RequestStatus status = chooseRequestStatus(event);
         return Request.builder()
                 .created(LocalDateTime.now())
-                .eventId(extraInfo.getEvent().getId())
-                .requesterId(extraInfo.getRequester().getId())
+                .eventId(event.getId())
+                .requesterId(requesterId)
                 .status(status)
                 .build();
     }
 
-    private RequestStatus chooseRequestStatus(EventDto eventDto) {
-        if (eventDto.getParticipantLimit() == 0 || !eventDto.isRequestModeration()) {
+    private RequestStatus chooseRequestStatus(RequestEventDto requestEventDto) {
+        if (requestEventDto.getParticipantLimit() == 0 || !requestEventDto.isRequestModeration()) {
             return RequestStatus.CONFIRMED;
         } else {
             return RequestStatus.PENDING;
@@ -163,13 +121,10 @@ public class RequestServiceImpl implements RequestService {
         Request request = findRequest(requestId);
         checkConfirmedStatus(request);
         request.setStatus(RequestStatus.CANCELED);
+        requestEventClient.decrementConfirmedRequests(request.getEventId());
         Request updated = requestRepository.save(request);
         log.debug("Обновлен запрос {}", updated);
-        eventService.decrementConfirmedRequests(request.getEventId());
-        RequestExtra extraInfo = aggregateExtra(userId, request.getEventId());
-        RequestDto result = RequestMapper.toRequestDto(updated);
-        addExtra(result, extraInfo);
-        return result;
+        return RequestMapper.toRequestDto(updated);
     }
 
     private Request findRequest(long id) {
@@ -186,34 +141,10 @@ public class RequestServiceImpl implements RequestService {
     @Override
     public List<RequestDto> getUserRequests(long requesterId) {
         log.trace("Инициировано получение запросов пользователя с id {}", requesterId);
-        UserShortDto user = userService.getUser(requesterId);
         List<Request> requests = requestRepository.findByRequesterIdOrderByCreatedDesc(requesterId);
         log.debug("Получены запросы пользователя {}", requests);
-        Map<Long, RequestExtra> extraMap = aggregateExtraMap(requests, user);
-        List<RequestDto> result = requests.stream()
+        return requests.stream()
                 .map(RequestMapper::toRequestDto)
                 .toList();
-        result.forEach(request -> addExtra(request, extraMap.get(request.getId())));
-        return result;
-    }
-
-    private Map<Long, RequestExtra> aggregateExtraMap(List<Request> requests, UserShortDto requester) {
-        Map<Long, RequestExtra> result = new HashMap<>();
-        Map<Long, EventDto> eventMap = eventService.getEventMap(
-                requests.stream()
-                        .map(Request::getEventId)
-                        .toList()
-        );
-        requests.forEach(
-                request -> {
-                    EventDto event = eventMap.get(request.getEventId());
-                    RequestExtra extraInfo = RequestExtra.builder()
-                            .event(event)
-                            .requester(requester)
-                            .build();
-                    result.put(request.getId(), extraInfo);
-                }
-        );
-        return result;
     }
 }

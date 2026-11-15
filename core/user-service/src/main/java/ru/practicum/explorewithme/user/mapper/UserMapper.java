@@ -1,9 +1,9 @@
 package ru.practicum.explorewithme.user.mapper;
 
-import ru.practicum.explorewithme.common.dto.NewUserRequest;
-import ru.practicum.explorewithme.common.dto.UserDto;
+import ru.practicum.explorewithme.user.dto.NewUserRequest;
+import ru.practicum.explorewithme.user.dto.UserDto;
+import ru.practicum.explorewithme.user.dto.UserShortDto;
 import ru.practicum.explorewithme.user.entity.User;
-import ru.practicum.explorewithme.common.dto.UserShortDto;
 
 public final class UserMapper {
     private UserMapper() {

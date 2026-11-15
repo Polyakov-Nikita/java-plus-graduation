@@ -5,14 +5,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.explorewithme.common.dto.AdminUpdateEventDto;
-import ru.practicum.explorewithme.common.dto.EventDto;
-import ru.practicum.explorewithme.common.service.EventService;
+import ru.practicum.explorewithme.event.dto.AdminUpdateEventDto;
+import ru.practicum.explorewithme.event.dto.EventDto;
+import ru.practicum.explorewithme.event.service.EventService;
 
 import java.util.List;
 
 import static ru.practicum.explorewithme.common.controller.ControllerConstants.*;
-
 
 @RestController
 @RequestMapping(path = ACCESS_ADMIN + URL_EVENTS)

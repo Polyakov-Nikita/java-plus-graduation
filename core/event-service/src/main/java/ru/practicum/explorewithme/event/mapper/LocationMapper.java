@@ -1,6 +1,6 @@
 package ru.practicum.explorewithme.event.mapper;
 
-import ru.practicum.explorewithme.common.dto.Location;
+import ru.practicum.explorewithme.event.dto.Location;
 import ru.practicum.explorewithme.event.entity.LocationEmbeddable;
 
 public class LocationMapper {

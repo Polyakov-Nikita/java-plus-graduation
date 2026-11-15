@@ -7,9 +7,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.practicum.explorewithme.common.dto.NewUserRequest;
-import ru.practicum.explorewithme.common.dto.UserDto;
-import ru.practicum.explorewithme.common.service.UserService;
+import ru.practicum.explorewithme.user.dto.NewUserRequest;
+import ru.practicum.explorewithme.user.dto.UserDto;
+import ru.practicum.explorewithme.user.service.UserService;
 
 import java.util.List;
 

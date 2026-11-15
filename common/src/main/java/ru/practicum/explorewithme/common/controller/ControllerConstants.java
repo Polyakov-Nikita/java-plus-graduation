@@ -3,12 +3,16 @@ package ru.practicum.explorewithme.common.controller;
 public class ControllerConstants {
     public static final String ACCESS_ADMIN = "/admin";
     public static final String ACCESS_PRIVATE = "/users";
+    public static final String ACCESS_INTERNAL = "/internal";
     public static final String URL_CATEGORIES = "/categories";
     public static final String URL_COMPILATIONS = "/compilations";
     public static final String URL_EVENTS = "/events";
     public static final String URL_USERS = "/users";
     public static final String URL_REQUESTS = "/requests";
     public static final String URL_COMMENTS = "/comments";
+    public static final String URL_INCREMENT = "/increment";
+    public static final String URL_DECREMENT = "/decrement";
+    public static final String URL_EXISTS = "/exists";
     public static final String ID_COMMENT = "commentId";
     public static final String ID_CATEGORY = "catId";
     public static final String ID_COMPILATION = "compId";
@@ -24,6 +28,8 @@ public class ControllerConstants {
     public static final String PARAM_RANGE_END = "rangeEnd";
     public static final String PARAM_ONLY_AVAILABLE = "onlyAvailable";
     public static final String PARAM_SORT = "sort";
+    public static final String PARAM_IDS = "ids";
+    public static final String PARAM_STATUS = "status";
     public static final String DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
     private ControllerConstants() {

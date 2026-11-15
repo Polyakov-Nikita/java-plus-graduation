@@ -5,16 +5,16 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import ru.practicum.explorewithme.common.dto.NewCategoryDto;
-import ru.practicum.explorewithme.common.dto.UpdateCategoryDto;
+import ru.practicum.explorewithme.category.dto.CategoryDto;
+import ru.practicum.explorewithme.category.dto.NewCategoryDto;
+import ru.practicum.explorewithme.category.dto.UpdateCategoryDto;
 import ru.practicum.explorewithme.category.entity.Category;
 import ru.practicum.explorewithme.category.exception.CategoryNotFoundException;
 import ru.practicum.explorewithme.category.exception.DuplicatedNameException;
 import ru.practicum.explorewithme.category.exception.NotEmptyCategoryException;
+import ru.practicum.explorewithme.category.feign.CategoryEventClient;
 import ru.practicum.explorewithme.category.mapper.CategoryMapper;
 import ru.practicum.explorewithme.category.repository.CategoryRepository;
-import ru.practicum.explorewithme.common.dto.CategoryDto;
-import ru.practicum.explorewithme.common.service.EventService;
 import ru.practicum.test.utils.ServiceTest;
 
 import java.util.List;
@@ -25,7 +25,7 @@ public class CategoryServiceImplTest extends ServiceTest {
     @Mock
     private CategoryRepository categoryRepository;
     @Mock
-    private EventService eventService;
+    private CategoryEventClient categoryEventClient;
 
     @Test
     public void createCategory_ReturnsObject() {
@@ -238,12 +238,12 @@ public class CategoryServiceImplTest extends ServiceTest {
     }
 
     private void whenEventsExistIn(long categoryId) {
-        Mockito.when(eventService.existsByCategoryId(Mockito.eq(categoryId)))
+        Mockito.when(categoryEventClient.existsByCategoryId(Mockito.eq(categoryId)))
                 .thenReturn(true);
     }
 
     private void whenEventsNotExistIn(long categoryId) {
-        Mockito.when(eventService.existsByCategoryId(Mockito.eq(categoryId)))
+        Mockito.when(categoryEventClient.existsByCategoryId(Mockito.eq(categoryId)))
                 .thenReturn(false);
     }
 

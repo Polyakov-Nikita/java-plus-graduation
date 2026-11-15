@@ -8,9 +8,9 @@ import org.mockito.Mockito;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import ru.practicum.explorewithme.category.contoller.AdminCategoryController;
-import ru.practicum.explorewithme.common.dto.NewCategoryDto;
-import ru.practicum.explorewithme.common.dto.UpdateCategoryDto;
-import ru.practicum.explorewithme.common.service.CategoryService;
+import ru.practicum.explorewithme.category.dto.NewCategoryDto;
+import ru.practicum.explorewithme.category.dto.UpdateCategoryDto;
+import ru.practicum.explorewithme.category.service.CategoryService;
 import ru.practicum.test.utils.ControllerTest;
 
 import static ru.practicum.explorewithme.common.controller.ControllerConstants.ACCESS_ADMIN;

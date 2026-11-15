@@ -9,12 +9,15 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import ru.practicum.explorewithme.StatsClient;
-import ru.practicum.explorewithme.common.dto.*;
-import ru.practicum.explorewithme.common.service.CategoryService;
-import ru.practicum.explorewithme.common.service.RequestService;
-import ru.practicum.explorewithme.common.service.UserService;
+import ru.practicum.explorewithme.common.dto.EventStatus;
+import ru.practicum.explorewithme.common.dto.PublicEventSort;
+import ru.practicum.explorewithme.event.dto.EventDto;
+import ru.practicum.explorewithme.event.dto.EventShortDto;
 import ru.practicum.explorewithme.event.entity.Event;
 import ru.practicum.explorewithme.event.entity.LocationEmbeddable;
+import ru.practicum.explorewithme.event.feign.EventCategoryClient;
+import ru.practicum.explorewithme.event.feign.EventUserClient;
+import ru.practicum.explorewithme.event.feign.dto.EventCategoryDto;
 import ru.practicum.explorewithme.event.repository.EventRepository;
 import ru.practicum.explorewithme.hit.EndpointHitRequest;
 import ru.practicum.explorewithme.stats.ViewStatsResponse;
@@ -41,13 +44,10 @@ class PublicEventServiceTests {
     private EventRepository eventRepository;
 
     @Mock
-    private CategoryService categoryService;
+    private EventCategoryClient eventCategoryClient;
 
     @Mock
-    private UserService userService;
-
-    @Mock
-    private RequestService requestService;
+    private EventUserClient eventUserClient;
 
     @Mock
     private StatsClient statsClient;
@@ -115,11 +115,11 @@ class PublicEventServiceTests {
     void getPublishedEvent_returnsEventWithViewsFromStatsMap() {
         Event event = createEvent(3L, "Published event", EventStatus.PUBLISHED, 0);
         when(eventRepository.findByIdAndStatus(3L, EventStatus.PUBLISHED)).thenReturn(Optional.of(event));
-        when(categoryService.getCategory(anyLong())).thenReturn(
-                CategoryDto.builder()
+        when(eventCategoryClient.getCategoryById(anyLong())).thenReturn(
+                EventCategoryDto.builder()
                         .id(CATEGORY_ID)
                         .name("Category Name")
-                .build()
+                        .build()
         );
         when(statsClient.getStatistics(any(LocalDateTime.class), any(LocalDateTime.class), anyList(), eq(true)))
                 .thenReturn(List.of(new ViewStatsResponse("ewm-main-service", "/events/3", 33L)));

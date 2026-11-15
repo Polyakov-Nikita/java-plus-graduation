@@ -1,6 +1,5 @@
 package ru.practicum.explorewithme.request.controller;
 
-
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
@@ -9,8 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.explorewithme.common.dto.RequestDto;
-import ru.practicum.explorewithme.common.service.RequestService;
+import ru.practicum.explorewithme.request.dto.RequestDto;
+import ru.practicum.explorewithme.request.service.RequestService;
 
 import java.util.List;
 

@@ -37,10 +37,10 @@ spring:
           enabled: false
 
       routes:
-        - id: main-service-read
-          uri: lb://main-service
+        - id: user-service-read
+          uri: lb://user-service
           predicates:
-            - Path=/admin/**,/categories/**,/comments/**,/compilations/**,/events/**,/users/**
+            - Path=/admin/users/**
             - Method=GET
 
           filters:
@@ -60,7 +60,147 @@ spring:
                   firstBackoff: 100ms
                   maxBackoff: 500ms
 
-        - id: main-service
-          uri: lb://main-service
+        - id: user-service
+          uri: lb://user-service
           predicates:
-            - Path=/admin/**,/categories/**,/comments/**,/compilations/**,/events/**,/users/**
+            - Path=/admin/users/**
+
+        - id: category-service-read
+          uri: lb://category-service
+          predicates:
+            - Path=/admin/categories/**, /categories/**
+            - Method=GET
+
+          filters:
+            - name: Retry
+              args:
+                retries: 2
+
+                statuses:
+                  - BAD_GATEWAY
+                  - SERVICE_UNAVAILABLE
+                  - GATEWAY_TIMEOUT
+
+                methods:
+                  - GET
+
+                backoff:
+                  firstBackoff: 100ms
+                  maxBackoff: 500ms
+
+        - id: category-service
+          uri: lb://category-service
+          predicates:
+            - Path=/admin/categories/**
+
+        - id: compilation-service-read
+          uri: lb://compilation-service
+          predicates:
+            - Path=/compilations/**
+            - Method=GET
+
+          filters:
+            - name: Retry
+              args:
+                retries: 2
+
+                statuses:
+                  - BAD_GATEWAY
+                  - SERVICE_UNAVAILABLE
+                  - GATEWAY_TIMEOUT
+
+                methods:
+                  - GET
+
+                backoff:
+                  firstBackoff: 100ms
+                  maxBackoff: 500ms
+
+        - id: compilation-service
+          uri: lb://compilation-service
+          predicates:
+            - Path=/admin/compilations/**
+
+        - id: request-service-read
+          uri: lb://request-service
+          predicates:
+            - Path=/users/{userId}/requests/**
+            - Method=GET
+
+          filters:
+            - name: Retry
+              args:
+                retries: 2
+
+                statuses:
+                  - BAD_GATEWAY
+                  - SERVICE_UNAVAILABLE
+                  - GATEWAY_TIMEOUT
+
+                methods:
+                  - GET
+
+                backoff:
+                  firstBackoff: 100ms
+                  maxBackoff: 500ms
+
+        - id: request-service
+          uri: lb://request-service
+          predicates:
+            - Path=/users/{userId}/requests/**
+
+        - id: event-service-read
+          uri: lb://event-service
+          predicates:
+            - Path=/admin/events/**, /users/{userId}/events/**, /events/**
+            - Method=GET
+
+          filters:
+            - name: Retry
+              args:
+                retries: 2
+
+                statuses:
+                  - BAD_GATEWAY
+                  - SERVICE_UNAVAILABLE
+                  - GATEWAY_TIMEOUT
+
+                methods:
+                  - GET
+
+                backoff:
+                  firstBackoff: 100ms
+                  maxBackoff: 500ms
+
+        - id: event-service
+          uri: lb://event-service
+          predicates:
+            - Path=/admin/events/**, /users/{userId}/events/**
+
+        - id: comment-service-read
+          uri: lb://comment-service
+          predicates:
+            - Path=/admin/comments/**, /users/{userId}/comments/**, /events/{eventId}/comments/**
+            - Method=GET
+
+          filters:
+            - name: Retry
+              args:
+                retries: 2
+
+                statuses:
+                  - BAD_GATEWAY
+                  - SERVICE_UNAVAILABLE
+                  - GATEWAY_TIMEOUT
+
+                methods:
+                  - GET
+
+                backoff:
+                  firstBackoff: 100ms
+                  maxBackoff: 500ms
+
+        - id: comment-service
+          uri: lb://comment-service
+          predicates:
+            - Path=/admin/comments/**, /users/{userId}/comments/**, /events/{eventId}/comments/**

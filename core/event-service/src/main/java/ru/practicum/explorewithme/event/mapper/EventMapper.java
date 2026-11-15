@@ -1,8 +1,9 @@
 package ru.practicum.explorewithme.event.mapper;
 
-import ru.practicum.explorewithme.common.dto.EventDto;
-import ru.practicum.explorewithme.common.dto.EventShortDto;
-import ru.practicum.explorewithme.common.dto.NewEventDto;
+import ru.practicum.explorewithme.event.dto.EventDto;
+import ru.practicum.explorewithme.event.dto.EventShortDto;
+import ru.practicum.explorewithme.event.dto.InternalEventDto;
+import ru.practicum.explorewithme.event.dto.NewEventDto;
 import ru.practicum.explorewithme.event.entity.Event;
 
 public class EventMapper {
@@ -47,6 +48,17 @@ public class EventMapper {
                 .paid(eventDto.isPaid())
                 .title(eventDto.getTitle())
                 .views(eventDto.getViews())
+                .build();
+    }
+
+    public static InternalEventDto toInternalEventDto(Event event) {
+        return InternalEventDto.builder()
+                .id(event.getId())
+                .confirmedRequests(event.getConfirmedRequests())
+                .initiatorId(event.getInitiatorId())
+                .participantLimit(event.getParticipantLimit())
+                .requestModeration(event.isRequestModeration())
+                .status(event.getStatus())
                 .build();
     }
 }

@@ -8,8 +8,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.practicum.explorewithme.common.dto.*;
-import ru.practicum.explorewithme.common.service.EventService;
+import ru.practicum.explorewithme.common.dto.AdminEventUpdateAction;
+import ru.practicum.explorewithme.common.dto.EventStatus;
+import ru.practicum.explorewithme.event.dto.Location;
+import ru.practicum.explorewithme.event.dto.AdminUpdateEventDto;
+import ru.practicum.explorewithme.event.dto.EventDto;
+import ru.practicum.explorewithme.event.feign.dto.EventCategoryDto;
+import ru.practicum.explorewithme.event.feign.dto.EventUserDto;
+import ru.practicum.explorewithme.event.service.EventService;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -44,12 +50,12 @@ public class AdminEventControllerTests {
         LocalDateTime time = LocalDateTime.of(2026, 8, 10, 14, 0, 0);
         LocalDateTime created = LocalDateTime.of(2026, 7, 10, 14, 0, 0);
         Location location = new Location(1, 1);
-        CategoryDto categoryDto = CategoryDto.builder()
+        EventCategoryDto categoryDto = EventCategoryDto.builder()
                 .id(1L)
                 .name("Name")
                 .build();
 
-        UserShortDto initiator = UserShortDto.builder()
+        EventUserDto initiator = EventUserDto.builder()
                 .id(1L)
                 .name("AdminName")
                 .build();

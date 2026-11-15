@@ -14,14 +14,21 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import ru.practicum.explorewithme.StatsClient;
-import ru.practicum.explorewithme.common.dto.*;
-import ru.practicum.explorewithme.common.service.CategoryService;
-import ru.practicum.explorewithme.common.service.RequestService;
-import ru.practicum.explorewithme.common.service.UserService;
+import ru.practicum.explorewithme.common.dto.AdminEventUpdateAction;
+import ru.practicum.explorewithme.common.dto.EventStatus;
+import ru.practicum.explorewithme.common.dto.RequestStatus;
+import ru.practicum.explorewithme.common.dto.UserEventUpdateAction;
+import ru.practicum.explorewithme.event.dto.*;
 import ru.practicum.explorewithme.event.entity.Event;
 import ru.practicum.explorewithme.event.entity.LocationEmbeddable;
 import ru.practicum.explorewithme.event.exception.EventNotFoundException;
 import ru.practicum.explorewithme.event.exception.UnavailableUpdateEventException;
+import ru.practicum.explorewithme.event.feign.EventCategoryClient;
+import ru.practicum.explorewithme.event.feign.EventRequestClient;
+import ru.practicum.explorewithme.event.feign.EventUserClient;
+import ru.practicum.explorewithme.event.feign.dto.EventCategoryDto;
+import ru.practicum.explorewithme.event.feign.dto.EventRequestDto;
+import ru.practicum.explorewithme.event.feign.dto.EventUserDto;
 import ru.practicum.explorewithme.event.repository.EventRepository;
 import ru.practicum.explorewithme.event.repository.specification.AdminEventSearchSpecification;
 import ru.practicum.explorewithme.stats.ViewStatsResponse;
@@ -48,13 +55,13 @@ class PrivateEventServiceTests {
     private EventRepository eventRepository;
 
     @Mock
-    private CategoryService categoryService;
+    private EventCategoryClient eventCategoryClient;
 
     @Mock
-    private UserService userService;
+    private EventUserClient eventUserClient;
 
     @Mock
-    private RequestService requestService;
+    private EventRequestClient eventRequestClient;
 
     @Mock
     private StatsClient statsClient;
@@ -133,11 +140,11 @@ class PrivateEventServiceTests {
     @Test
     void createEvent_createsEventWithCorrectFields() {
         Event expectedEvent = createTestEvent(EVENT_ID, USER_ID, CATEGORY_ID, EventStatus.PENDING);
-        CategoryDto category = createTestCategory(CATEGORY_ID);
-        UserShortDto initiator = createTestUser(USER_ID);
+        EventCategoryDto category = createTestCategory(CATEGORY_ID);
+        EventUserDto initiator = createTestUser(USER_ID);
 
-        when(categoryService.getCategory(newEventDto.getCategory())).thenReturn(category);
-        when(userService.getUser(USER_ID)).thenReturn(initiator);
+        when(eventCategoryClient.getCategoryById(newEventDto.getCategory())).thenReturn(category);
+        when(eventUserClient.getUserById(USER_ID)).thenReturn(initiator);
         when(eventRepository.save(any(Event.class))).thenReturn(expectedEvent);
 
         EventDto result = eventService.createEvent(USER_ID, newEventDto);
@@ -145,8 +152,8 @@ class PrivateEventServiceTests {
         assertThat(result.getId()).isEqualTo(expectedEvent.getId());
         assertThat(result.getStatus()).isEqualTo(EventStatus.PENDING);
 
-        verify(categoryService).getCategory(newEventDto.getCategory());
-        verify(userService).getUser(USER_ID);
+        verify(eventCategoryClient).getCategoryById(newEventDto.getCategory());
+        verify(eventUserClient).getUserById(USER_ID);
         verify(eventRepository).save(any(Event.class));
     }
 
@@ -236,23 +243,17 @@ class PrivateEventServiceTests {
     void getRequests_returnsRequestsFromRequestService() {
         long requestId = 10L;
         Event event = createTestEvent(EVENT_ID, USER_ID, CATEGORY_ID, EventStatus.PUBLISHED);
-        EventDto eventDto = EventDto.builder()
-                .id(EVENT_ID)
-                .build();
-        UserShortDto requester = UserShortDto.builder()
-                .id(USER_ID)
-                .build();
-        RequestDto requestDto = createTestRequestDto(requestId, eventDto, requester, RequestStatus.PENDING);
-        List<RequestDto> requests = List.of(requestDto);
+        EventRequestDto requestDto = createTestRequestDto(requestId, EVENT_ID, USER_ID, RequestStatus.PENDING);
+        List<EventRequestDto> requests = List.of(requestDto);
 
         when(eventRepository.existsByIdAndInitiatorId(EVENT_ID, USER_ID)).thenReturn(true);
         when(eventRepository.findById(EVENT_ID)).thenReturn(Optional.of(event));
-        when(requestService.getRequestsToUsersEvent(any(EventDto.class))).thenReturn(requests);
+        when(eventRequestClient.getRequests(anyLong())).thenReturn(requests);
 
-        List<RequestDto> result = eventService.getRequests(USER_ID, EVENT_ID);
+        List<EventRequestDto> result = eventService.getRequests(USER_ID, EVENT_ID);
 
         assertThat(result).isEqualTo(requests);
-        verify(requestService).getRequestsToUsersEvent(any(EventDto.class));
+        verify(eventRequestClient).getRequests(anyLong());
     }
 
     @Test
@@ -271,30 +272,18 @@ class PrivateEventServiceTests {
         Event event = createTestEvent(EVENT_ID, USER_ID, CATEGORY_ID, EventStatus.PUBLISHED);
         event.setParticipantLimit(3);
         event.setConfirmedRequests(2);
-        EventDto eventDto = EventDto.builder()
-                .id(EVENT_ID)
-                .build();
-        UserShortDto requester1 = UserShortDto.builder()
-                .id(1L)
-                .build();
-        UserShortDto requester2 = UserShortDto.builder()
-                .id(2L)
-                .build();
-        UserShortDto requester3 = UserShortDto.builder()
-                .id(3L)
-                .build();
 
         UpdateRequestStatusDto update = createTestUpdateRequestStatusDto(ids, RequestStatus.CONFIRMED);
 
         when(eventRepository.findByIdAndInitiatorId(EVENT_ID, USER_ID)).thenReturn(Optional.of(event));
 
-        RequestDto confirmed = createTestRequestDto(requestId1, eventDto, requester1, RequestStatus.CONFIRMED);
-        RequestDto rejected1 = createTestRequestDto(requestId2, eventDto, requester2, RequestStatus.REJECTED);
-        RequestDto rejected2 = createTestRequestDto(requestId3, eventDto, requester3, RequestStatus.REJECTED);
+        EventRequestDto confirmed = createTestRequestDto(requestId1, EVENT_ID, 1L, RequestStatus.CONFIRMED);
+        EventRequestDto rejected1 = createTestRequestDto(requestId2, EVENT_ID, 2L, RequestStatus.REJECTED);
+        EventRequestDto rejected2 = createTestRequestDto(requestId3, EVENT_ID, 3L, RequestStatus.REJECTED);
 
-        when(requestService.changeRequestStatuses(List.of(1L), RequestStatus.CONFIRMED))
+        when(eventRequestClient.changeRequestStatuses(List.of(1L), RequestStatus.CONFIRMED))
                 .thenReturn(List.of(confirmed));
-        when(requestService.changeRequestStatuses(List.of(2L, 3L), RequestStatus.REJECTED))
+        when(eventRequestClient.changeRequestStatuses(List.of(2L, 3L), RequestStatus.REJECTED))
                 .thenReturn(List.of(rejected1, rejected2));
 
         ChangedRequestStatusesDto result = eventService.updateRequestStatuses(USER_ID, EVENT_ID, update);
@@ -336,24 +325,24 @@ class PrivateEventServiceTests {
         EventDto eventDto = EventDto.builder()
                 .id(EVENT_ID)
                 .build();
-        UserShortDto requester1 = UserShortDto.builder()
+        EventUserDto requester1 = EventUserDto.builder()
                 .id(1L)
                 .build();
-        UserShortDto requester2 = UserShortDto.builder()
+        EventUserDto requester2 = EventUserDto.builder()
                 .id(2L)
                 .build();
-        UserShortDto requester3 = UserShortDto.builder()
+        EventUserDto requester3 = EventUserDto.builder()
                 .id(3L)
                 .build();
 
         UpdateRequestStatusDto update = createTestUpdateRequestStatusDto(ids, RequestStatus.CONFIRMED);
 
-        RequestDto confirmed1 = createTestRequestDto(requestId1, eventDto, requester1, RequestStatus.CONFIRMED);
-        RequestDto confirmed2 = createTestRequestDto(requestId2, eventDto, requester2, RequestStatus.CONFIRMED);
-        RequestDto confirmed3 = createTestRequestDto(requestId3, eventDto, requester3, RequestStatus.CONFIRMED);
+        EventRequestDto confirmed1 = createTestRequestDto(requestId1, EVENT_ID, 1L, RequestStatus.CONFIRMED);
+        EventRequestDto confirmed2 = createTestRequestDto(requestId2, EVENT_ID, 2L, RequestStatus.CONFIRMED);
+        EventRequestDto confirmed3 = createTestRequestDto(requestId3, EVENT_ID, 3L, RequestStatus.CONFIRMED);
 
         when(eventRepository.findByIdAndInitiatorId(EVENT_ID, USER_ID)).thenReturn(Optional.of(event));
-        when(requestService.changeRequestStatuses(ids, RequestStatus.CONFIRMED)).thenReturn(List.of(confirmed1, confirmed2, confirmed3));
+        when(eventRequestClient.changeRequestStatuses(ids, RequestStatus.CONFIRMED)).thenReturn(List.of(confirmed1, confirmed2, confirmed3));
 
         ChangedRequestStatusesDto result = eventService.updateRequestStatuses(USER_ID, EVENT_ID, update);
 
@@ -494,8 +483,8 @@ class PrivateEventServiceTests {
     }
 
     private Event createTestEvent(long eventId, long userId, long categoryId, EventStatus status) {
-        CategoryDto category = createTestCategory(categoryId);
-        UserShortDto initiator = createTestUser(userId);
+        EventCategoryDto category = createTestCategory(categoryId);
+        EventUserDto initiator = createTestUser(userId);
         LocationEmbeddable location = new LocationEmbeddable(1.0, 1.0);
 
         return Event.builder()
@@ -517,15 +506,15 @@ class PrivateEventServiceTests {
                 .build();
     }
 
-    private CategoryDto createTestCategory(long categoryId) {
-        return CategoryDto.builder()
+    private EventCategoryDto createTestCategory(long categoryId) {
+        return EventCategoryDto.builder()
                 .id(categoryId)
                 .name("Test Category")
                 .build();
     }
 
-    private UserShortDto createTestUser(long userId) {
-        return UserShortDto.builder()
+    private EventUserDto createTestUser(long userId) {
+        return EventUserDto.builder()
                 .id(userId)
                 .name("Test User")
                 .build();
@@ -560,8 +549,8 @@ class PrivateEventServiceTests {
                 .build();
     }
 
-    private RequestDto createTestRequestDto(long requestId, EventDto event, UserShortDto requester, RequestStatus status) {
-        return RequestDto.builder()
+    private EventRequestDto createTestRequestDto(long requestId, Long event, Long requester, RequestStatus status) {
+        return EventRequestDto.builder()
                 .id(requestId)
                 .event(event)
                 .requester(requester)

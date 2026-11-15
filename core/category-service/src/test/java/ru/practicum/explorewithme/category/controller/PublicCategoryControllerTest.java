@@ -8,7 +8,7 @@ import org.mockito.Mockito;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import ru.practicum.explorewithme.category.contoller.PublicCategoryController;
-import ru.practicum.explorewithme.common.service.CategoryService;
+import ru.practicum.explorewithme.category.service.CategoryService;
 import ru.practicum.test.utils.ControllerTest;
 
 import static ru.practicum.explorewithme.common.controller.ControllerConstants.*;

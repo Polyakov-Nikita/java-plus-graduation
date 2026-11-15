@@ -8,8 +8,15 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.practicum.explorewithme.common.dto.*;
-import ru.practicum.explorewithme.common.service.EventService;
+import ru.practicum.explorewithme.common.dto.EventStatus;
+import ru.practicum.explorewithme.event.dto.Location;
+import ru.practicum.explorewithme.common.dto.RequestStatus;
+import ru.practicum.explorewithme.common.dto.UserEventUpdateAction;
+import ru.practicum.explorewithme.event.dto.*;
+import ru.practicum.explorewithme.event.feign.dto.EventCategoryDto;
+import ru.practicum.explorewithme.event.feign.dto.EventRequestDto;
+import ru.practicum.explorewithme.event.feign.dto.EventUserDto;
+import ru.practicum.explorewithme.event.service.EventService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -38,7 +45,7 @@ public class PrivateEventControllerTests {
     private UserUpdateEventDto updateRequest;
     private EventDto response;
     private UpdateRequestStatusDto update;
-    private RequestDto responseRequest;
+    private EventRequestDto responseRequest;
     private ChangedRequestStatusesDto responseStatuses;
 
     @BeforeEach
@@ -46,11 +53,11 @@ public class PrivateEventControllerTests {
         LocalDateTime time = LocalDateTime.of(2026, 8, 10, 14, 0, 0);
         LocalDateTime created = LocalDateTime.of(2026, 7, 10, 14, 0, 0);
         Location location = new Location(1, 1);
-        UserShortDto initiator = UserShortDto.builder()
+        EventUserDto initiator = EventUserDto.builder()
                 .id(1L)
                 .name("Name")
                 .build();
-        CategoryDto category = CategoryDto.builder()
+        EventCategoryDto category = EventCategoryDto.builder()
                 .id(1L)
                 .name("Category")
                 .build();
@@ -102,7 +109,7 @@ public class PrivateEventControllerTests {
                 .status(RequestStatus.CONFIRMED)
                 .build();
 
-        responseRequest = RequestDto.builder()
+        responseRequest = EventRequestDto.builder()
                 .build();
 
         responseStatuses = ChangedRequestStatusesDto.builder()

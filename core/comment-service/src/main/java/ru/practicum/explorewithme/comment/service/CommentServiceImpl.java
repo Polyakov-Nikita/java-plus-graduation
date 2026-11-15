@@ -12,14 +12,14 @@ import ru.practicum.explorewithme.comment.entity.Comment;
 import ru.practicum.explorewithme.comment.exception.CommentNotFoundException;
 import ru.practicum.explorewithme.comment.exception.UnavailableUpdateCommentException;
 import ru.practicum.explorewithme.comment.exception.UserNotFoundException;
+import ru.practicum.explorewithme.comment.feign.CommentEventClient;
+import ru.practicum.explorewithme.comment.feign.CommentUserClient;
+import ru.practicum.explorewithme.comment.feign.dto.CommentEventDto;
+import ru.practicum.explorewithme.comment.feign.dto.CommentUserDto;
 import ru.practicum.explorewithme.comment.mapper.CommentMapper;
 import ru.practicum.explorewithme.comment.repository.CommentRepository;
 import ru.practicum.explorewithme.comment.repository.specification.AdminCommentSearchSpecification;
-import ru.practicum.explorewithme.common.dto.EventDto;
-import ru.practicum.explorewithme.common.dto.UserShortDto;
 import ru.practicum.explorewithme.common.pagination.OffsetPageRequest;
-import ru.practicum.explorewithme.common.service.EventService;
-import ru.practicum.explorewithme.common.service.UserService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,8 +30,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
-    private final UserService userService;
-    private final EventService eventService;
+    private final CommentUserClient commentUserClient;
+    private final CommentEventClient commentEventClient;
 
     @Override
     public List<CommentShortDto> getComments(long eventId, int from, int size) {
@@ -74,7 +74,7 @@ public class CommentServiceImpl implements CommentService {
         log.trace("Инициирована модерация комментария с id {} администратором с id {}", commentId, adminId);
         LocalDateTime now = LocalDateTime.now();
         checkUserExistence(adminId);
-        UserShortDto admin = userService.getUser(adminId);
+        CommentUserDto admin = commentUserClient.getUserById(adminId);
         Comment comment = findComment(commentId);
 
         if (action.equals(ModerationAction.APPROVE)) {
@@ -98,7 +98,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     private void checkUserExistence(long userId) {
-        boolean isUserExists = userService.existsById(userId);
+        boolean isUserExists = commentUserClient.existsById(userId);
         if (!isUserExists) {
             throw new UserNotFoundException(userId);
         }
@@ -156,9 +156,9 @@ public class CommentServiceImpl implements CommentService {
 
     private CommentExtra aggregateExtra(long userId, long eventId) {
         CommentExtra.CommentExtraBuilder extraBuilder = CommentExtra.builder();
-        UserShortDto author = userService.getUser(userId);
+        CommentUserDto author = commentUserClient.getUserById(userId);
         extraBuilder.authorId(author.getId());
-        EventDto event = eventService.getEvent(eventId);
+        CommentEventDto event = commentEventClient.getEventById(eventId);
         extraBuilder.eventId(event.getId());
         return extraBuilder.build();
     }

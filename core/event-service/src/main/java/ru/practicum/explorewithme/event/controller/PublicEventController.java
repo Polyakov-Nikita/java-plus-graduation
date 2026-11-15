@@ -9,10 +9,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.explorewithme.common.dto.EventDto;
-import ru.practicum.explorewithme.common.dto.EventShortDto;
 import ru.practicum.explorewithme.common.dto.PublicEventSort;
-import ru.practicum.explorewithme.common.service.EventService;
+import ru.practicum.explorewithme.event.dto.EventDto;
+import ru.practicum.explorewithme.event.dto.EventShortDto;
+import ru.practicum.explorewithme.event.service.EventService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -37,7 +37,7 @@ public class PublicEventController {
             @RequestParam(name = PARAM_RANGE_END, required = false)
             @DateTimeFormat(pattern = DATE_TIME_PATTERN) LocalDateTime rangeEnd,
             @RequestParam(name = PARAM_ONLY_AVAILABLE, required = false, defaultValue = "false") boolean onlyAvailable,
-            @RequestParam(name = PARAM_SORT, required = false/*ТУТЬ(см ниже)*/) PublicEventSort sort,
+            @RequestParam(name = PARAM_SORT, required = false) PublicEventSort sort,
             @RequestParam(name = PARAM_FROM, required = false, defaultValue = "0")
             @PositiveOrZero int from,
             @RequestParam(name = PARAM_SIZE, required = false, defaultValue = "10")

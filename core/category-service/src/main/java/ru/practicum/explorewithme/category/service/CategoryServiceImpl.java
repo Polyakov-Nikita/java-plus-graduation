@@ -4,17 +4,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.explorewithme.category.dto.CategoryDto;
+import ru.practicum.explorewithme.category.dto.NewCategoryDto;
+import ru.practicum.explorewithme.category.dto.UpdateCategoryDto;
 import ru.practicum.explorewithme.category.exception.NotEmptyCategoryException;
-import ru.practicum.explorewithme.common.dto.CategoryDto;
-import ru.practicum.explorewithme.common.dto.NewCategoryDto;
-import ru.practicum.explorewithme.common.dto.UpdateCategoryDto;
 import ru.practicum.explorewithme.category.entity.Category;
 import ru.practicum.explorewithme.category.exception.CategoryNotFoundException;
 import ru.practicum.explorewithme.category.exception.DuplicatedNameException;
+import ru.practicum.explorewithme.category.feign.CategoryEventClient;
 import ru.practicum.explorewithme.category.mapper.CategoryMapper;
 import ru.practicum.explorewithme.category.repository.CategoryRepository;
-import ru.practicum.explorewithme.common.service.CategoryService;
-import ru.practicum.explorewithme.common.service.EventService;
 
 import java.util.List;
 
@@ -24,7 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
-    private final EventService eventService;
+    private final CategoryEventClient categoryEventClient;
 
     @Override
     public CategoryDto createCategory(NewCategoryDto body) {
@@ -60,7 +59,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     private void checkCategoryEventsExistsBy(long id) {
-        if (eventService.existsByCategoryId(id)) {
+        if (categoryEventClient.existsByCategoryId(id)) {
             log.info("Категория с id={} содержит события", id);
             throw new NotEmptyCategoryException(id);
         }
@@ -104,6 +103,14 @@ public class CategoryServiceImpl implements CategoryService {
         log.trace("Инициировано получение категории с id={}", catId);
         Category result = findCategory(catId);
         log.debug("Найдена категория {}", result);
+        return CategoryMapper.toCategoryDto(result);
+    }
+
+    @Override
+    public CategoryDto getCategoryInternal(long catId) {
+        log.trace("Инициирован внутренний запрос на получение категории с id={}", catId);
+        Category result = findCategory(catId);
+        log.debug("Внутренний запрос обработан, найдена категория {}", result);
         return CategoryMapper.toCategoryDto(result);
     }
 }

@@ -5,10 +5,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.explorewithme.common.dto.CategoryDto;
-import ru.practicum.explorewithme.common.dto.NewCategoryDto;
-import ru.practicum.explorewithme.common.dto.UpdateCategoryDto;
-import ru.practicum.explorewithme.common.service.CategoryService;
+import ru.practicum.explorewithme.category.dto.CategoryDto;
+import ru.practicum.explorewithme.category.dto.NewCategoryDto;
+import ru.practicum.explorewithme.category.dto.UpdateCategoryDto;
+import ru.practicum.explorewithme.category.service.CategoryService;
 
 import static ru.practicum.explorewithme.common.controller.ControllerConstants.*;
 

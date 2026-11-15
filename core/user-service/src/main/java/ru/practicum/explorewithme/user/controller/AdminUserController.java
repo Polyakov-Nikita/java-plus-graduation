@@ -6,9 +6,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.explorewithme.common.controller.ControllerConstants;
-import ru.practicum.explorewithme.common.dto.NewUserRequest;
-import ru.practicum.explorewithme.common.dto.UserDto;
-import ru.practicum.explorewithme.common.service.UserService;
+import ru.practicum.explorewithme.user.dto.NewUserRequest;
+import ru.practicum.explorewithme.user.dto.UserDto;
+import ru.practicum.explorewithme.user.service.UserService;
 
 import java.util.List;
 

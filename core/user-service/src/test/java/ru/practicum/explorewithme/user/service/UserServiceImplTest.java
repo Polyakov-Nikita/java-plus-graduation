@@ -8,8 +8,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import ru.practicum.explorewithme.common.dto.NewUserRequest;
-import ru.practicum.explorewithme.common.dto.UserDto;
+import ru.practicum.explorewithme.user.dto.NewUserRequest;
+import ru.practicum.explorewithme.user.dto.UserDto;
 import ru.practicum.explorewithme.user.entity.User;
 import ru.practicum.explorewithme.user.exception.DuplicatedEmailException;
 import ru.practicum.explorewithme.user.exception.UserNotFoundException;
@@ -78,7 +78,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void getUsers_withoutIds_shouldReturnUsersFromPage() {
+    void getUsers_withoutIds_shouldReturnUsersFromPageByIdInternal() {
         User user = User.builder()
                 .id(1L)
                 .name("Test User")
@@ -108,7 +108,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void getUsers_withIds_shouldReturnOnlyRequestedUsers() {
+    void getUsers_withIds_shouldReturnOnlyRequestedUsersByIdInternal() {
         List<Long> ids = List.of(1L, 2L);
         User firstUser = User.builder()
                 .id(1L)
