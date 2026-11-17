@@ -35,7 +35,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public List<CommentShortDto> getComments(long eventId, int from, int size) {
-        log.trace("Инициировано получение комментариев с параметрами from={} и size={}", from, size);
+        log.debug("Инициировано получение комментариев с параметрами from={} и size={}", from, size);
         List<Comment> result = commentRepository.findByEventIdWithOffset(eventId, from, size);
         log.debug("Найдено {} категорий", result.size());
         return result.stream()
@@ -53,7 +53,7 @@ public class CommentServiceImpl implements CommentService {
                                            List<CommentStatus> states,
                                            int from,
                                            int size) {
-        log.trace("Инициирован поиск комментариев");
+        log.debug("Инициирован поиск комментариев");
         Specification<Comment> spec = new AdminCommentSearchSpecification(text, authorsIds, rangeStart, rangeEnd, eventIds, states);
         Pageable pageable = new OffsetPageRequest(from, size);
         Page<Comment> commentPage = commentRepository.findAll(spec, pageable);
@@ -71,7 +71,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public CommentDto moderateComment(long adminId, long commentId, ModerationAction action) {
-        log.trace("Инициирована модерация комментария с id {} администратором с id {}", commentId, adminId);
+        log.debug("Инициирована модерация комментария с id {} администратором с id {}", commentId, adminId);
         LocalDateTime now = LocalDateTime.now();
         checkUserExistence(adminId);
         CommentUserDto admin = commentUserClient.getUserById(adminId);
@@ -112,7 +112,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public void deleteCommentByAdmin(long adminId, long commentId) {
-        log.trace("Инициировано удаление комментария с id {} администратором с id {}", commentId, adminId);
+        log.debug("Инициировано удаление комментария с id {} администратором с id {}", commentId, adminId);
         checkUserExistence(adminId);
         Comment comment = findComment(commentId);
         commentRepository.delete(comment);
@@ -122,7 +122,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public void deleteCommentByUser(long userId, long commentId) {
-        log.trace("Инициировано удаление комментария с id {} пользователем с id {}", commentId, userId);
+        log.debug("Инициировано удаление комментария с id {} пользователем с id {}", commentId, userId);
         checkUserExistence(userId);
         Comment comment = findComment(commentId);
         checkCommentAuthorship(comment, userId);
@@ -132,7 +132,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public List<CommentShortDto> getUsersComments(long userId) {
-        log.trace("Инициировано получение комментариев пользователя с id {}", userId);
+        log.debug("Инициировано получение комментариев пользователя с id {}", userId);
         checkUserExistence(userId);
         List<Comment> commentsList = commentRepository.findByAuthorId(userId);
         log.debug("Получены комментарии пользователя {}", commentsList);
@@ -144,7 +144,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public CommentShortDto createComment(long userId, long eventId, NewCommentDto body) {
-        log.trace("Инициировано создание комментария к событию с id {} пользователем с id {}", eventId, userId);
+        log.debug("Инициировано создание комментария к событию с id {} пользователем с id {}", eventId, userId);
         CommentExtra extraInfo = aggregateExtra(userId, eventId);
         Comment comment = CommentMapper.toComment(body);
         addExtra(comment, extraInfo);
@@ -176,7 +176,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public CommentShortDto updateComment(long userId, long commentId, UpdateCommentDto body) {
-        log.trace("Инициировано обновление комментария с id {} пользователем с id {}", commentId, userId);
+        log.debug("Инициировано обновление комментария с id {} пользователем с id {}", commentId, userId);
         checkUserExistence(userId);
         Comment comment = findComment(commentId);
         checkCommentAuthorship(comment, userId);

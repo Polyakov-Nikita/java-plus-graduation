@@ -1,13 +1,11 @@
 package ru.practicum.explorewithme.comment.feign.dto;
 
 import lombok.Builder;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.Data;
 import ru.practicum.explorewithme.common.dto.EventStatus;
 
 @Builder
-@Getter
-@ToString
+@Data
 public class CommentEventDto {
     private long id;
     private int confirmedRequests;

@@ -3,9 +3,8 @@ package ru.practicum.explorewithme.event.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.Setter;
-import lombok.ToString;
 import ru.practicum.explorewithme.common.dto.EventStatus;
 import ru.practicum.explorewithme.event.feign.dto.EventCategoryDto;
 import ru.practicum.explorewithme.event.feign.dto.EventUserDto;
@@ -13,8 +12,7 @@ import ru.practicum.explorewithme.event.feign.dto.EventUserDto;
 import java.time.LocalDateTime;
 
 @Builder
-@Getter
-@ToString
+@Data
 public class EventDto {
     private long id;
     private String annotation;

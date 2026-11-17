@@ -8,7 +8,7 @@ public class DuplicatedIdsException extends RuntimeException {
     private final long userId;
 
     public DuplicatedIdsException(long eventId, long userId) {
-        super(String.format("Request with event id '%d' and user id '%d' already exists", eventId, userId));
+        super("Request with event id '%d' and user id '%d' already exists".formatted(eventId, userId));
         this.eventId = eventId;
         this.userId = userId;
     }

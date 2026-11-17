@@ -7,7 +7,7 @@ public class CategoryNotFoundException extends RuntimeException {
     private final long id;
 
     public CategoryNotFoundException(long id) {
-        super(String.format("Category with id '%d' not exists", id));
+        super("Category with id '%d' not exists".formatted(id));
         this.id = id;
     }
 }

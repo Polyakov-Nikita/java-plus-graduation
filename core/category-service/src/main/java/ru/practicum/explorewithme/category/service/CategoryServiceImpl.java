@@ -7,10 +7,10 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.explorewithme.category.dto.CategoryDto;
 import ru.practicum.explorewithme.category.dto.NewCategoryDto;
 import ru.practicum.explorewithme.category.dto.UpdateCategoryDto;
-import ru.practicum.explorewithme.category.exception.NotEmptyCategoryException;
 import ru.practicum.explorewithme.category.entity.Category;
 import ru.practicum.explorewithme.category.exception.CategoryNotFoundException;
 import ru.practicum.explorewithme.category.exception.DuplicatedNameException;
+import ru.practicum.explorewithme.category.exception.NotEmptyCategoryException;
 import ru.practicum.explorewithme.category.feign.CategoryEventClient;
 import ru.practicum.explorewithme.category.mapper.CategoryMapper;
 import ru.practicum.explorewithme.category.repository.CategoryRepository;
@@ -27,7 +27,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryDto createCategory(NewCategoryDto body) {
-        log.trace("Инициировано сохранение категории. Тело запроса: {}", body);
+        log.debug("Инициировано сохранение категории. Тело запроса: {}", body);
         checkNameUniqueness(body.getName());
         Category category = CategoryMapper.toCategory(body);
         log.debug("Тело запроса {} преобразовано в категорию {}", body, category);
@@ -45,7 +45,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public void deleteCategory(long catId) {
-        log.trace("Инициировано удаление категории с id={}", catId);
+        log.debug("Инициировано удаление категории с id={}", catId);
         checkCategoryExists(catId);
         checkCategoryEventsExistsBy(catId);
         categoryRepository.deleteById(catId);
@@ -68,11 +68,11 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryDto updateCategory(long catId, UpdateCategoryDto body) {
-        log.trace("Инициировано сохранение категории с id={}. Тело запроса: {}", catId, body);
+        log.debug("Инициировано сохранение категории с id={}. Тело запроса: {}", catId, body);
         Category category = findCategory(catId);
-        log.trace("Категория найдена: {}", category);
+        log.debug("Категория найдена: {}", category);
         if (category.getName().equals(body.getName())) {
-            log.trace("Имя категории не изменилось");
+            log.debug("Имя категории не изменилось");
             return CategoryMapper.toCategoryDto(category);
         }
         checkNameUniqueness(body.getName());
@@ -90,7 +90,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<CategoryDto> getCategories(int from, int size) {
-        log.trace("Инициировано получение категорий с параметрами from={} и size={}", from, size);
+        log.debug("Инициировано получение категорий с параметрами from={} и size={}", from, size);
         List<Category> result = categoryRepository.findWithOffset(from, size);
         log.debug("Найдено {} категорий", result.size());
         return result.stream()
@@ -100,7 +100,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryDto getCategory(long catId) {
-        log.trace("Инициировано получение категории с id={}", catId);
+        log.debug("Инициировано получение категории с id={}", catId);
         Category result = findCategory(catId);
         log.debug("Найдена категория {}", result);
         return CategoryMapper.toCategoryDto(result);
@@ -108,7 +108,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryDto getCategoryInternal(long catId) {
-        log.trace("Инициирован внутренний запрос на получение категории с id={}", catId);
+        log.debug("Инициирован внутренний запрос на получение категории с id={}", catId);
         Category result = findCategory(catId);
         log.debug("Внутренний запрос обработан, найдена категория {}", result);
         return CategoryMapper.toCategoryDto(result);

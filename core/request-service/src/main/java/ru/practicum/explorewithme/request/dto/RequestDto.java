@@ -2,15 +2,13 @@ package ru.practicum.explorewithme.request.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.Data;
 import ru.practicum.explorewithme.common.dto.RequestStatus;
 
 import java.time.LocalDateTime;
 
 @Builder
-@Getter
-@ToString
+@Data
 public class RequestDto {
     private long id;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")

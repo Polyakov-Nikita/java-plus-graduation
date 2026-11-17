@@ -56,7 +56,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<EventDto> getEvents(long userId, int from, int size) {
-        log.trace("Инициировано получение событий пользователем с id {}", userId);
+        log.debug("Инициировано получение событий пользователем с id {}", userId);
         Pageable pageable = new OffsetPageRequest(from, size);
         List<Event> events = eventRepository.findByInitiatorId(userId, pageable);
         log.debug("Получен список событий {}", events);
@@ -126,7 +126,7 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional
     public EventDto createEvent(long userId, NewEventDto newEventDto) {
-        log.trace("Инициировано создание события {} пользователем с id {}", newEventDto, userId);
+        log.debug("Инициировано создание события {} пользователем с id {}", newEventDto, userId);
         EventExtra extraInfo = aggregateExtra(userId, newEventDto);
         Event event = EventMapper.toEvent(newEventDto);
         addExtra(event, extraInfo);
@@ -166,7 +166,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventDto getEvent(long userId, long eventId) {
-        log.trace("Инициировано получение события {} пользователем с id {}", eventId, userId);
+        log.debug("Инициировано получение события {} пользователем с id {}", eventId, userId);
         Event event = findEvent(eventId, userId);
         log.debug("Получено событие {}", event);
         return getEventsWithStats(List.of(event), statsClient).getFirst();
@@ -180,7 +180,7 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional
     public EventDto updateEvent(long userId, long eventId, UserUpdateEventDto update) {
-        log.trace("Инициировано обновление события с id {} пользователем с id {}, изменения - {}", eventId, userId, update);
+        log.debug("Инициировано обновление события с id {} пользователем с id {}, изменения - {}", eventId, userId, update);
         Event event = findEvent(eventId, userId);
         checkEventNotCanceled(event);
         EventStatus status = changeEventStatus(update);
@@ -210,7 +210,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<EventRequestDto> getRequests(long userId, long eventId) {
-        log.trace("Инициировано получение запроса пользователем с id {} к событию с id {}", userId, eventId);
+        log.debug("Инициировано получение запроса пользователем с id {} к событию с id {}", userId, eventId);
         checkEventExistence(userId, eventId);
         Event event = findEvent(eventId);
         return eventRequestClient.getRequests(event.getId());
@@ -225,7 +225,7 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional
     public ChangedRequestStatusesDto updateRequestStatuses(long userId, long eventId, UpdateRequestStatusDto update) {
-        log.trace("Инициировано обновление статусов запросов пользователем с id {} к событию с id {}, изменения - {}", userId, eventId, update);
+        log.debug("Инициировано обновление статусов запросов пользователем с id {} к событию с id {}, изменения - {}", userId, eventId, update);
         Event event = findEvent(eventId, userId);
         //Обработка ситуации, когда не установлено ограничение по количеству участников
         //или запрос не требует модерации
@@ -256,7 +256,7 @@ public class EventServiceImpl implements EventService {
                                                   int size,
                                                   String ip,
                                                   String uri) {
-        log.trace("Инициировано получение опубликованных событий");
+        log.debug("Инициировано получение опубликованных событий");
         checkDateRange(rangeStart, rangeEnd);
         saveHit(ip, uri);
 
@@ -306,7 +306,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventDto getPublishedEvent(long eventId, String ip, String uri) {
-        log.trace("Инициировано получение опубликованного события с id {}", eventId);
+        log.debug("Инициировано получение опубликованного события с id {}", eventId);
         saveHit(ip, uri);
         Event event = findEvent(eventId, EventStatus.PUBLISHED);
         return getEventsWithStats(List.of(event), statsClient).getFirst();
@@ -325,7 +325,7 @@ public class EventServiceImpl implements EventService {
                                        String rangeEnd,
                                        int from,
                                        int size) {
-        log.trace("Инициирован поиск событий");
+        log.debug("Инициирован поиск событий");
         Specification<Event> spec = new AdminEventSearchSpecification(users, states, categories, rangeStart, rangeEnd);
         Pageable pageable = new OffsetPageRequest(from, size);
         Page<Event> eventPage = eventRepository.findAll(spec, pageable);
@@ -341,7 +341,7 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional
     public EventDto updateEvent(long eventId, AdminUpdateEventDto update) {
-        log.trace("Инициировано обновление события с id {} администратором, изменения - {}", eventId, update);
+        log.debug("Инициировано обновление события с id {} администратором, изменения - {}", eventId, update);
         Event event = findEvent(eventId);
         EventStatus status = changeEventStatus(event, update);
 
@@ -509,7 +509,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public InternalEventDto getEventInternal(long eventId) {
-        log.trace("Инициировано получение события с id {}", eventId);
+        log.debug("Инициировано получение события с id {}", eventId);
         Event event = findEvent(eventId);
         log.debug("Получено событие {}", event);
         return EventMapper.toInternalEventDto(event);
@@ -547,7 +547,7 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional
     public void incrementConfirmedRequestsInternal(long eventId) {
-        log.trace("Инициировано увеличение на 1 числа подтвержденных запросов к событию с id {}", eventId);
+        log.debug("Инициировано увеличение на 1 числа подтвержденных запросов к событию с id {}", eventId);
         Event event = findEvent(eventId);
         int confirmedRequests = event.getConfirmedRequests() + 1;
         event.setConfirmedRequests(confirmedRequests);
@@ -557,7 +557,7 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional
     public void decrementConfirmedRequestsInternal(long eventId) {
-        log.trace("Инициировано уменьшение на 1 числа подтвержденных запросов к событию с id {}", eventId);
+        log.debug("Инициировано уменьшение на 1 числа подтвержденных запросов к событию с id {}", eventId);
         Event event = findEvent(eventId);
         int confirmedRequests = event.getConfirmedRequests() - 1;
         event.setConfirmedRequests(confirmedRequests);

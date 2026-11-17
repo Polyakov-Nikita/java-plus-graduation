@@ -45,13 +45,13 @@ public class UsersEventSearchSpecifications {
     public static Specification<Event> eventDateFrom(LocalDateTime rangeStart) {
         return (root, query, builder) -> rangeStart == null
                 ? builder.conjunction()
-                : builder.greaterThanOrEqualTo(root.<LocalDateTime>get("eventDate"), rangeStart);
+                : builder.greaterThanOrEqualTo(root.get("eventDate"), rangeStart);
     }
 
     public static Specification<Event> eventDateTo(LocalDateTime rangeEnd) {
         return (root, query, builder) -> rangeEnd == null
                 ? builder.conjunction()
-                : builder.lessThanOrEqualTo(root.<LocalDateTime>get("eventDate"), rangeEnd);
+                : builder.lessThanOrEqualTo(root.get("eventDate"), rangeEnd);
     }
 
     public static Specification<Event> onlyAvailable(boolean onlyAvailable) {
@@ -62,7 +62,7 @@ public class UsersEventSearchSpecifications {
 
             return builder.or(
                     builder.equal(root.get("participantLimit"), 0),
-                    builder.lessThan(root.<Integer>get("confirmedRequests"), root.<Integer>get("participantLimit"))
+                    builder.lessThan(root.get("confirmedRequests"), root.get("participantLimit"))
             );
         };
     }

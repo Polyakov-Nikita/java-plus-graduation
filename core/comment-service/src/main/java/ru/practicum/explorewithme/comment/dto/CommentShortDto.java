@@ -2,14 +2,12 @@ package ru.practicum.explorewithme.comment.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.Data;
 
 import java.time.LocalDateTime;
 
-@Getter
-@ToString
 @Builder
+@Data
 public class CommentShortDto {
     private long id;
     private String text;

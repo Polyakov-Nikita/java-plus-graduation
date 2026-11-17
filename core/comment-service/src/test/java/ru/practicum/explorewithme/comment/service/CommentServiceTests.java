@@ -56,14 +56,16 @@ public class CommentServiceTests {
 
     private CommentUserDto admin;
     private CommentUserDto author;
-    private CommentUserDto anotherUser;
     private Comment comment;
 
     @BeforeEach
     void setUp() {
-        admin = CommentUserDto.builder().id(ADMIN_ID).build();
-        author = CommentUserDto.builder().id(AUTHOR_ID).build();
-        anotherUser = CommentUserDto.builder().id(ANOTHER_USER_ID).build();
+        admin = CommentUserDto.builder()
+                .id(ADMIN_ID)
+                .build();
+        author = CommentUserDto.builder()
+                .id(AUTHOR_ID)
+                .build();
 
         comment = Comment.builder()
                 .id(COMMENT_ID)

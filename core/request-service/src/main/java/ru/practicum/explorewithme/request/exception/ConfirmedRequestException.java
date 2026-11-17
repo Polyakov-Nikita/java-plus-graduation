@@ -7,7 +7,7 @@ public class ConfirmedRequestException extends RuntimeException {
     private final long id;
 
     public ConfirmedRequestException(long id) {
-        super(String.format("Trying cancel request with \"CONFIRMED\" status. Request id: '%d'", id));
+        super("Trying cancel request with \"CONFIRMED\" status. Request id: '%d'".formatted(id));
         this.id = id;
     }
 }

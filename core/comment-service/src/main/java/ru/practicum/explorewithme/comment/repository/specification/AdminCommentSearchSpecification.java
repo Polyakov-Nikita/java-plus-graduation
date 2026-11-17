@@ -1,6 +1,7 @@
 package ru.practicum.explorewithme.comment.repository.specification;
 
 import jakarta.persistence.criteria.*;
+import lombok.NonNull;
 import org.springframework.data.jpa.domain.Specification;
 import ru.practicum.explorewithme.comment.dto.CommentStatus;
 import ru.practicum.explorewithme.comment.entity.Comment;
@@ -40,7 +41,7 @@ public class AdminCommentSearchSpecification implements Specification<Comment> {
     }
 
     @Override
-    public Predicate toPredicate(Root<Comment> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
+    public Predicate toPredicate(@NonNull Root<Comment> root, CriteriaQuery<?> query, @NonNull CriteriaBuilder cb) {
         List<Predicate> predicates = new ArrayList<>();
 
         if (text != null && !text.isEmpty()) {

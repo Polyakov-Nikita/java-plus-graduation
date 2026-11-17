@@ -7,7 +7,7 @@ public class EventNotFoundException extends RuntimeException {
     private final long id;
 
     public EventNotFoundException(long id) {
-        super(String.format("Event with id '%d' not exists", id));
+        super("Event with id '%d' not exists".formatted(id));
         this.id = id;
     }
 }

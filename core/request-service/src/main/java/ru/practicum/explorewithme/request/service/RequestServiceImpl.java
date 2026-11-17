@@ -31,7 +31,7 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public List<RequestDto> getRequestsInternal(long eventId) {
-        log.trace("Инициировано получение запросов к событию с id {}", eventId);
+        log.debug("Инициировано получение запросов к событию с id {}", eventId);
         List<Request> requests = requestRepository.findByEventId(eventId);
         log.debug("Получен список запросов {}", requests);
         return requests.stream()
@@ -42,7 +42,7 @@ public class RequestServiceImpl implements RequestService {
     @Override
     @Transactional
     public List<RequestDto> changeRequestStatusesInternal(List<Long> requestIds, RequestStatus status) {
-        log.trace("Инициировано изменение статусов на {} к списку запросов {}", status, requestIds);
+        log.debug("Инициировано изменение статусов на {} к списку запросов {}", status, requestIds);
         List<Request> requests = requestRepository.findByIdIn(requestIds);
         checkNonPendingRequests(requests);
         requests.forEach(request -> request.setStatus(status));
@@ -65,7 +65,7 @@ public class RequestServiceImpl implements RequestService {
     @Override
     @Transactional
     public RequestDto create(long userId, long eventId) {
-        log.trace("Инициировано создание запроса у пользователя с id {} для события с id {}", userId, eventId);
+        log.debug("Инициировано создание запроса у пользователя с id {} для события с id {}", userId, eventId);
         checkDuplicatedIds(userId, eventId);
         RequestEventDto event = requestEventClient.getEventById(eventId);
         checkEvent(event, userId);
@@ -117,7 +117,7 @@ public class RequestServiceImpl implements RequestService {
     @Override
     @Transactional
     public RequestDto cancelRequest(long userId, long requestId) {
-        log.trace("Инициирована отмена запроса с id {} у пользователя с id {}", userId, requestId);
+        log.debug("Инициирована отмена запроса с id {} у пользователя с id {}", userId, requestId);
         Request request = findRequest(requestId);
         checkConfirmedStatus(request);
         request.setStatus(RequestStatus.CANCELED);
@@ -140,7 +140,7 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public List<RequestDto> getUserRequests(long requesterId) {
-        log.trace("Инициировано получение запросов пользователя с id {}", requesterId);
+        log.debug("Инициировано получение запросов пользователя с id {}", requesterId);
         List<Request> requests = requestRepository.findByRequesterIdOrderByCreatedDesc(requesterId);
         log.debug("Получены запросы пользователя {}", requests);
         return requests.stream()

@@ -6,16 +6,14 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.Data;
 import ru.practicum.explorewithme.common.dto.UserEventUpdateAction;
 import ru.practicum.explorewithme.event.validation.DateIsNotEarly;
 
 import java.time.LocalDateTime;
 
 @Builder
-@Getter
-@ToString
+@Data
 public class UserUpdateEventDto implements EventUpdateCommon {
     @Size(min = 20, max = 2000, message = "Annotation must be between 20 and 2000 characters")
     private String annotation;

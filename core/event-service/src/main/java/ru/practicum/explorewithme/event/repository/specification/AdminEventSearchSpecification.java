@@ -4,6 +4,7 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import lombok.NonNull;
 import org.springframework.data.jpa.domain.Specification;
 import ru.practicum.explorewithme.event.entity.Event;
 
@@ -35,7 +36,7 @@ public class AdminEventSearchSpecification implements Specification<Event> {
     }
 
     @Override
-    public Predicate toPredicate(Root<Event> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
+    public Predicate toPredicate(@NonNull Root<Event> root, CriteriaQuery<?> query, @NonNull CriteriaBuilder cb) {
         List<Predicate> predicates = new ArrayList<>();
 
         if (users != null && !users.isEmpty()) {

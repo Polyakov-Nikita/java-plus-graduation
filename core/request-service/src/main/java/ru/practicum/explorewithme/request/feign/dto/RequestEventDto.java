@@ -1,13 +1,11 @@
 package ru.practicum.explorewithme.request.feign.dto;
 
 import lombok.Builder;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.Data;
 import ru.practicum.explorewithme.common.dto.EventStatus;
 
 @Builder
-@Getter
-@ToString
+@Data
 public class RequestEventDto {
     private long id;
     private int confirmedRequests;

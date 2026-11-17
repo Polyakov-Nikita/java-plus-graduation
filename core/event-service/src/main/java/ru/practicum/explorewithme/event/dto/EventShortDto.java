@@ -2,16 +2,14 @@ package ru.practicum.explorewithme.event.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.Data;
 import ru.practicum.explorewithme.event.feign.dto.EventCategoryDto;
 import ru.practicum.explorewithme.event.feign.dto.EventUserDto;
 
 import java.time.LocalDateTime;
 
 @Builder
-@Getter
-@ToString
+@Data
 public class EventShortDto {
     private long id;
     private String annotation;

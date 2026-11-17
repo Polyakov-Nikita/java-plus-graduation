@@ -3,12 +3,10 @@ package ru.practicum.explorewithme.category.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.Data;
 
 @Builder
-@Getter
-@ToString
+@Data
 public class NewCategoryDto {
     @NotBlank(message = "'name' field cannot be empty.")
     @Size(max = 50, message = "too long name string")

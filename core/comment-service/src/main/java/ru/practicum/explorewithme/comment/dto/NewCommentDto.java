@@ -2,12 +2,10 @@ package ru.practicum.explorewithme.comment.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.Data;
 
 @Builder
-@Getter
-@ToString
+@Data
 public class NewCommentDto {
     @NotBlank
     private String text;

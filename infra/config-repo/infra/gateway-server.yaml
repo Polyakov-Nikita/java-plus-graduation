@@ -36,29 +36,26 @@ spring:
         locator:
           enabled: false
 
+      default-filters:
+        - name: Retry
+          args:
+            retries: 2
+            statuses:
+              - BAD_GATEWAY
+              - SERVICE_UNAVAILABLE
+              - GATEWAY_TIMEOUT
+            methods:
+              - GET
+            backoff:
+              firstBackoff: 100ms
+              maxBackoff: 500ms
+
       routes:
         - id: user-service-read
           uri: lb://user-service
           predicates:
             - Path=/admin/users/**
             - Method=GET
-
-          filters:
-            - name: Retry
-              args:
-                retries: 2
-
-                statuses:
-                  - BAD_GATEWAY
-                  - SERVICE_UNAVAILABLE
-                  - GATEWAY_TIMEOUT
-
-                methods:
-                  - GET
-
-                backoff:
-                  firstBackoff: 100ms
-                  maxBackoff: 500ms
 
         - id: user-service
           uri: lb://user-service
@@ -71,23 +68,6 @@ spring:
             - Path=/admin/categories/**, /categories/**
             - Method=GET
 
-          filters:
-            - name: Retry
-              args:
-                retries: 2
-
-                statuses:
-                  - BAD_GATEWAY
-                  - SERVICE_UNAVAILABLE
-                  - GATEWAY_TIMEOUT
-
-                methods:
-                  - GET
-
-                backoff:
-                  firstBackoff: 100ms
-                  maxBackoff: 500ms
-
         - id: category-service
           uri: lb://category-service
           predicates:
@@ -98,23 +78,6 @@ spring:
           predicates:
             - Path=/compilations/**
             - Method=GET
-
-          filters:
-            - name: Retry
-              args:
-                retries: 2
-
-                statuses:
-                  - BAD_GATEWAY
-                  - SERVICE_UNAVAILABLE
-                  - GATEWAY_TIMEOUT
-
-                methods:
-                  - GET
-
-                backoff:
-                  firstBackoff: 100ms
-                  maxBackoff: 500ms
 
         - id: compilation-service
           uri: lb://compilation-service
@@ -127,23 +90,6 @@ spring:
             - Path=/users/{userId}/requests/**
             - Method=GET
 
-          filters:
-            - name: Retry
-              args:
-                retries: 2
-
-                statuses:
-                  - BAD_GATEWAY
-                  - SERVICE_UNAVAILABLE
-                  - GATEWAY_TIMEOUT
-
-                methods:
-                  - GET
-
-                backoff:
-                  firstBackoff: 100ms
-                  maxBackoff: 500ms
-
         - id: request-service
           uri: lb://request-service
           predicates:
@@ -152,25 +98,8 @@ spring:
         - id: event-service-read
           uri: lb://event-service
           predicates:
-            - Path=/admin/events/**, /users/{userId}/events/**, /events/**
+            - Path=/admin/events/**, /users/{userId}/events/**, /events, /events/{eventId}
             - Method=GET
-
-          filters:
-            - name: Retry
-              args:
-                retries: 2
-
-                statuses:
-                  - BAD_GATEWAY
-                  - SERVICE_UNAVAILABLE
-                  - GATEWAY_TIMEOUT
-
-                methods:
-                  - GET
-
-                backoff:
-                  firstBackoff: 100ms
-                  maxBackoff: 500ms
 
         - id: event-service
           uri: lb://event-service
@@ -182,23 +111,6 @@ spring:
           predicates:
             - Path=/admin/comments/**, /users/{userId}/comments/**, /events/{eventId}/comments/**
             - Method=GET
-
-          filters:
-            - name: Retry
-              args:
-                retries: 2
-
-                statuses:
-                  - BAD_GATEWAY
-                  - SERVICE_UNAVAILABLE
-                  - GATEWAY_TIMEOUT
-
-                methods:
-                  - GET
-
-                backoff:
-                  firstBackoff: 100ms
-                  maxBackoff: 500ms
 
         - id: comment-service
           uri: lb://comment-service

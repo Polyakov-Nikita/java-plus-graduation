@@ -7,7 +7,7 @@ public class DuplicatedNameException extends RuntimeException {
     private final String name;
 
     public DuplicatedNameException(String name) {
-        super(String.format("Category with name '%s' already exists", name));
+        super("Category with name '%s' already exists".formatted(name));
         this.name = name;
     }
 }

@@ -3,15 +3,13 @@ package ru.practicum.explorewithme.event.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.Data;
 import ru.practicum.explorewithme.event.validation.DateIsNotEarly;
 
 import java.time.LocalDateTime;
 
 @Builder
-@Getter
-@ToString
+@Data
 public class NewEventDto {
     @NotBlank(message = "'annotation' field cannot be empty.")
     @Size(min = 20, max = 2000, message = "Title must be between 20 and 2000 characters")

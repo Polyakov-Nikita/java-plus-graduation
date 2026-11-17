@@ -30,9 +30,9 @@ public class CompilationsServiceImpl implements CompilationsService {
     @Override
     @Transactional
     public CompilationDto createCompilation(NewCompilationDto body) {
-        log.trace("Инициировано сохранение подборки. Тело запроса: {}", body);
+        log.debug("Инициировано сохранение подборки. Тело запроса: {}", body);
         List<CompilationEventDto> events = getEvents(body.getEvents());
-        log.trace("Найдено {} событий", events.size());
+        log.debug("Найдено {} событий", events.size());
         Compilation compilation = CompilationMapper.toCompilation(body);
         linkEvents(compilation, events);
         Compilation result = compilationRepository.save(compilation);
@@ -75,7 +75,7 @@ public class CompilationsServiceImpl implements CompilationsService {
     @Override
     @Transactional
     public void deleteCompilation(long compId) {
-        log.trace("Инициировано удаление подборки с id={}", compId);
+        log.debug("Инициировано удаление подборки с id={}", compId);
         checkCompilationExistence(compId);
         compilationRepository.deleteById(compId);
         log.debug("Подборка с id={} удалена", compId);
@@ -90,9 +90,9 @@ public class CompilationsServiceImpl implements CompilationsService {
     @Override
     @Transactional
     public CompilationDto updateCompilation(long compId, UpdateCompilationRequest body) {
-        log.trace("Инициировано обновление сборки с id={}. Тело запроса: {}", compId, body);
+        log.debug("Инициировано обновление сборки с id={}. Тело запроса: {}", compId, body);
         Compilation compilation = findCompilation(compId);
-        log.trace("Подборка найдена: {}", compilation);
+        log.debug("Подборка найдена: {}", compilation);
         List<CompilationEventDto> events;
         List<Long> eventIdsUpdate = body.getEvents();
         if (eventIdsUpdate == null) {
@@ -135,7 +135,7 @@ public class CompilationsServiceImpl implements CompilationsService {
 
     @Override
     public List<CompilationDto> getCompilations(Boolean pinned, int from, int size) {
-        log.trace("Инициировано получение подборок с параметрами pinned={}, from={} и size={}", pinned, from, size);
+        log.debug("Инициировано получение подборок с параметрами pinned={}, from={} и size={}", pinned, from, size);
         List<Compilation> result = compilationRepository.findWithOffset(pinned, from, size);
         log.debug("Найдено {} подборок", result.size());
         Map<Compilation, List<CompilationEventDto>> compilationsEvents = getCompilationsEvents(result);
@@ -157,7 +157,7 @@ public class CompilationsServiceImpl implements CompilationsService {
 
     @Override
     public CompilationDto getCompilation(long compId) {
-        log.trace("Инициировано получение подборки с id={}", compId);
+        log.debug("Инициировано получение подборки с id={}", compId);
         Compilation result = findCompilation(compId);
         List<CompilationEventDto> events = getEventsOf(result);
         log.debug("Найдена подборка {}", result);

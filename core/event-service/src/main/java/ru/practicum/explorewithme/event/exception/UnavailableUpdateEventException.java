@@ -7,7 +7,7 @@ public class UnavailableUpdateEventException extends RuntimeException {
     private final long id;
 
     public UnavailableUpdateEventException(long id) {
-        super(String.format("Update to event with id '%d' is unavailable", id));
+        super("Update to event with id '%d' is unavailable".formatted(id));
         this.id = id;
     }
 }

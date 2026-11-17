@@ -1,12 +1,10 @@
 package ru.practicum.explorewithme.compilations.feign.dto;
 
 import lombok.Builder;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.Data;
 
 @Builder
-@Getter
-@ToString
+@Data
 public class CompilationEventDto {
     private long id;
 }

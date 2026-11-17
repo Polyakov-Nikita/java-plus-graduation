@@ -7,7 +7,7 @@ public class DuplicatedEmailException extends RuntimeException {
     private final String email;
 
     public DuplicatedEmailException(String email) {
-        super(String.format("User with email '%s' already exists", email));
+        super("User with email '%s' already exists".formatted(email));
         this.email = email;
     }
 }

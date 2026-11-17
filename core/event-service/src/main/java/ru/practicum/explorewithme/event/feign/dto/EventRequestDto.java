@@ -2,15 +2,13 @@ package ru.practicum.explorewithme.event.feign.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.Data;
 import ru.practicum.explorewithme.common.dto.RequestStatus;
 
 import java.time.LocalDateTime;
 
 @Builder
-@Getter
-@ToString
+@Data
 public class EventRequestDto {
     private long id;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")

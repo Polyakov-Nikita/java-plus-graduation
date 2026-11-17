@@ -1,12 +1,10 @@
 package ru.practicum.explorewithme.category.dto;
 
 import lombok.Builder;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.Data;
 
 @Builder
-@Getter
-@ToString
+@Data
 public class CategoryDto {
     private long id;
     private String name;

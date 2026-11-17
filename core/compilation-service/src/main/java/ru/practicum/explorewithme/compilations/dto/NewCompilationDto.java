@@ -3,14 +3,12 @@ package ru.practicum.explorewithme.compilations.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.Data;
 
 import java.util.List;
 
 @Builder
-@Getter
-@ToString
+@Data
 public class NewCompilationDto {
     private List<Long> events;
     private boolean pinned;
