@@ -8,7 +8,7 @@ import org.mockito.Mockito;
 import org.springframework.test.web.servlet.ResultActions;
 import ru.practicum.explorewithme.exception.handler.ErrorHandler;
 import ru.practicum.explorewithme.service.ViewStatsService;
-import ru.practicum.explorewithme.test.ControllerTest;
+import ru.practicum.test.utils.ControllerTest;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -34,8 +34,9 @@ public class ViewStatsControllerTest extends ControllerTest {
     @Test
     public void getStatistics_StatusOk() {
         // Arrange
-        LocalDateTime start = NOW.minusDays(2);
-        LocalDateTime end = NOW.minusDays(1);
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime start = now.minusDays(2);
+        LocalDateTime end = now.minusDays(1);
         List<String> uris = List.of("uri");
         boolean unique = true;
 

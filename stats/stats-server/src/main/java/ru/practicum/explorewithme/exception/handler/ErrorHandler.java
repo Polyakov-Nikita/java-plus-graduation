@@ -7,61 +7,56 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ru.practicum.explorewithme.common.exception.handler.ApiError;
+import ru.practicum.explorewithme.common.exception.handler.ErrorResponseBuilder;
 import ru.practicum.explorewithme.exception.WrongDateIntervalException;
-
-import java.time.LocalDateTime;
 
 @RestControllerAdvice
 @SuppressWarnings("unused")
 public class ErrorHandler {
+    private final ErrorResponseBuilder responseBuilder = new ErrorResponseBuilder(getClass().getSimpleName());
+
     @ExceptionHandler
-    public ResponseEntity<ErrorResponse> unexpected(Throwable e) {
-        return createResponse(
-                HttpStatus.INTERNAL_SERVER_ERROR,
+    public ResponseEntity<ApiError> unexpected(Throwable e) {
+        return responseBuilder.createErrorResponse(
                 "SERVICE: unexpected error",
-                e.getMessage());
-    }
-
-    private ResponseEntity<ErrorResponse> createResponse(HttpStatus status, String reason, String message) {
-        return ResponseEntity.status(status).body(new ErrorResponse(
-                status.toString(),
-                reason,
-                message,
-                LocalDateTime.now()
-        ));
+                e.getMessage(),
+                HttpStatus.INTERNAL_SERVER_ERROR
+        );
     }
 
     @ExceptionHandler
-    public ResponseEntity<ErrorResponse> methodArgumentNotValid(MethodArgumentNotValidException e) {
+    public ResponseEntity<ApiError> methodArgumentNotValid(MethodArgumentNotValidException e) {
         FieldError fieldError = e.getFieldError();
         if (fieldError == null) {
             return unexpected(e);
         }
-        return createResponse(
-                HttpStatus.BAD_REQUEST,
+        return responseBuilder.createErrorResponse(
                 "incorrect field value",
                 String.format(
                         "value of field '%s'=%s is incorrect, cause: %s",
                         fieldError.getField(),
                         fieldError.getRejectedValue(),
-                        fieldError.getDefaultMessage()));
-    }
-
-    @ExceptionHandler
-    public ResponseEntity<ErrorResponse> wrongDateInterval(WrongDateIntervalException e) {
-        return createResponse(
-                HttpStatus.BAD_REQUEST,
-                "wrong date interval",
-                e.getMessage()
+                        fieldError.getDefaultMessage()),
+                HttpStatus.BAD_REQUEST
         );
     }
 
     @ExceptionHandler
-    public ResponseEntity<ErrorResponse> missingServletRequestParameter(MissingServletRequestParameterException e) {
-        return createResponse(
-                HttpStatus.BAD_REQUEST,
+    public ResponseEntity<ApiError> wrongDateInterval(WrongDateIntervalException e) {
+        return responseBuilder.createErrorResponse(
+                "wrong date interval",
+                e.getMessage(),
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<ApiError> missingServletRequestParameter(MissingServletRequestParameterException e) {
+        return responseBuilder.createErrorResponse(
                 "missing request parameter",
-                e.getBody().getDetail()
+                e.getBody().getDetail(),
+                HttpStatus.BAD_REQUEST
         );
     }
 }

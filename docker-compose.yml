@@ -1,28 +1,39 @@
 services:
   ewm-db:
     image: postgres:16.1
+
     container_name: ewm-db
+
     ports:
       - "6542:5432"
+
     environment:
       - POSTGRES_PASSWORD=ewm
       - POSTGRES_USER=ewm
       - POSTGRES_DB=ewm
+
     healthcheck:
       test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
       timeout: 5s
       interval: 5s
       retries: 10
 
+    volumes:
+      - ./docker/init-databases.sql:/docker-entrypoint-initdb.d/init.sql
+
   stats-db:
     image: postgres:16.1
+
     container_name: stats-db
+
     ports:
       - "6541:5432"
+
     environment:
       - POSTGRES_PASSWORD=stats
       - POSTGRES_USER=stats
       - POSTGRES_DB=stats
+
     healthcheck:
       test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
       timeout: 5s

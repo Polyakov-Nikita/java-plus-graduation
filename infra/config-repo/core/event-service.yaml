@@ -1,0 +1,48 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: none
+
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  sql:
+    init:
+      mode: always
+
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:6542/event_db
+    username: ewm
+    password: ewm
+
+  cloud:
+    openfeign:
+      client:
+        config:
+          default:
+            connectTimeout: 1000
+            readTimeout: 2000
+            loggerLevel: basic
+
+      circuitbreaker:
+        enabled: true
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-size: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+
+  timelimiter:
+    configs:
+      default:
+        timeout-duration: 3s
+
+stats:
+  serverName: stats-server
