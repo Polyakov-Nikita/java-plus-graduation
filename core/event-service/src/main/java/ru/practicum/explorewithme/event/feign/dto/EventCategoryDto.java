@@ -7,5 +7,4 @@ import lombok.Data;
 @Data
 public class EventCategoryDto {
     private long id;
-    private String name;
 }

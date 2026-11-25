@@ -15,4 +15,6 @@ public interface RequestService {
     RequestDto cancelRequest(long userId, long requestId);
 
     List<RequestDto> getUserRequests(long requesterId);
+
+    Boolean userAttendEventInternal(long userId, long eventId);
 }

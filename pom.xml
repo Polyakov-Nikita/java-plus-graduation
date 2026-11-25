@@ -11,6 +11,7 @@
 	</parent>
 
 	<name>Explore With Me</name>
+
     <modules>
         <module>infra</module>
         <module>stats</module>
@@ -29,7 +30,14 @@
 		<java.version>21</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring-cloud.version>2025.0.3</spring-cloud.version>
+        <grpc-spring-boot-starter.version>3.1.0.RELEASE</grpc-spring-boot-starter.version>
+        <protobuf.version>3.23.4</protobuf.version>
+        <avro.version>1.11.3</avro.version>
+        <grpc.version>1.63.0</grpc.version>
         <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
+        <avro-maven-plugin.version>${avro.version}</avro-maven-plugin.version>
+        <protobuf-plugin.version>2.4.0</protobuf-plugin.version>
+        <kafka-clients.version>3.6.1</kafka-clients.version>
 	</properties>
 
     <dependencies>

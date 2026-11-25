@@ -1,10 +1,9 @@
 package ru.practicum.explorewithme.event.mapper;
 
-import ru.practicum.explorewithme.event.dto.EventDto;
-import ru.practicum.explorewithme.event.dto.EventShortDto;
-import ru.practicum.explorewithme.event.dto.InternalEventDto;
-import ru.practicum.explorewithme.event.dto.NewEventDto;
+import ru.practicum.explorewithme.event.dto.*;
 import ru.practicum.explorewithme.event.entity.Event;
+import ru.practicum.explorewithme.event.feign.dto.EventCategoryDto;
+import ru.practicum.explorewithme.event.feign.dto.EventUserDto;
 
 public class EventMapper {
     public static Event toEvent(NewEventDto newEventDto) {
@@ -23,10 +22,12 @@ public class EventMapper {
         return EventDto.builder()
                 .id(event.getId())
                 .annotation(event.getAnnotation())
+                .category(toEventCategoryDto(event.getCategoryId()))
                 .confirmedRequests(event.getConfirmedRequests())
                 .createdOn(event.getCreatedOn())
                 .description(event.getDescription())
                 .eventDate(event.getEventDate())
+                .initiator(toEventUserDto(event.getInitiatorId()))
                 .location(LocationMapper.toLocation(event.getLocation()))
                 .paid(event.isPaid())
                 .participantLimit(event.getParticipantLimit())
@@ -34,6 +35,18 @@ public class EventMapper {
                 .requestModeration(event.isRequestModeration())
                 .status(event.getStatus())
                 .title(event.getTitle())
+                .build();
+    }
+
+    private static EventCategoryDto toEventCategoryDto(long catId) {
+        return EventCategoryDto.builder()
+                .id(catId)
+                .build();
+    }
+
+    private static EventUserDto toEventUserDto(long userId) {
+        return EventUserDto.builder()
+                .id(userId)
                 .build();
     }
 
@@ -47,7 +60,6 @@ public class EventMapper {
                 .initiator(eventDto.getInitiator())
                 .paid(eventDto.isPaid())
                 .title(eventDto.getTitle())
-                .views(eventDto.getViews())
                 .build();
     }
 
@@ -59,6 +71,12 @@ public class EventMapper {
                 .participantLimit(event.getParticipantLimit())
                 .requestModeration(event.isRequestModeration())
                 .status(event.getStatus())
+                .build();
+    }
+
+    public static RatedEventDto toRatedEventDto(Event event) {
+        return RatedEventDto.builder()
+                .id(event.getId())
                 .build();
     }
 }

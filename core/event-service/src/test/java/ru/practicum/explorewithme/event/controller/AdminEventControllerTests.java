@@ -52,12 +52,10 @@ public class AdminEventControllerTests {
         Location location = new Location(1, 1);
         EventCategoryDto categoryDto = EventCategoryDto.builder()
                 .id(1L)
-                .name("Name")
                 .build();
 
         EventUserDto initiator = EventUserDto.builder()
                 .id(1L)
-                .name("AdminName")
                 .build();
 
         updateRequest = AdminUpdateEventDto.builder()
@@ -88,7 +86,6 @@ public class AdminEventControllerTests {
                 .requestModeration(true)
                 .status(EventStatus.PUBLISHED)
                 .title("TitleTitleTitleTitleTitle")
-                .views(42L)
                 .build();
 
         responseList = List.of(responseEvent);

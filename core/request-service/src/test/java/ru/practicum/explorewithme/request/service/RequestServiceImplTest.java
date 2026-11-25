@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import ru.practicum.ewm.stats.proto.message.ActionTypeProto;
 import ru.practicum.explorewithme.common.dto.EventStatus;
 import ru.practicum.explorewithme.common.dto.RequestStatus;
 import ru.practicum.explorewithme.request.dto.RequestDto;
@@ -15,6 +16,7 @@ import ru.practicum.explorewithme.request.exception.UnavailableUpdateRequestExce
 import ru.practicum.explorewithme.request.feign.RequestEventClient;
 import ru.practicum.explorewithme.request.feign.dto.RequestEventDto;
 import ru.practicum.explorewithme.request.repository.RequestRepository;
+import ru.practicum.explorewithme.stats.client.RecommendationsClient;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -32,6 +34,9 @@ public class RequestServiceImplTest {
 
     @Mock
     private RequestEventClient requestEventClient;
+    @Mock
+    private RecommendationsClient recommendationsClient;
+
 
     @InjectMocks
     private RequestServiceImpl requestService;
@@ -59,6 +64,7 @@ public class RequestServiceImplTest {
                 .status(RequestStatus.CONFIRMED)
                 .build();
 
+        doNothing().when(recommendationsClient).collect(anyLong(), anyLong(), any(ActionTypeProto.class));
         when(requestRepository.existsByEventIdAndRequesterId(anyLong(), anyLong())).thenReturn(false);
         when(requestEventClient.getEventById(anyLong())).thenReturn(event);
         when(requestRepository.save(any(Request.class))).thenReturn(savedRequest);

@@ -6,10 +6,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.explorewithme.common.exception.handler.ApiError;
 import ru.practicum.explorewithme.common.exception.handler.ErrorResponseBuilder;
-import ru.practicum.explorewithme.event.exception.EarlyDateException;
-import ru.practicum.explorewithme.event.exception.EventNotFoundException;
-import ru.practicum.explorewithme.event.exception.UnavailableUpdateEventException;
-import ru.practicum.explorewithme.event.exception.WrongDateIntervalException;
+import ru.practicum.explorewithme.event.exception.*;
 
 @RestControllerAdvice
 @SuppressWarnings("unused")
@@ -34,5 +31,10 @@ public class EventExceptionHandler {
     @ExceptionHandler
     public ResponseEntity<ApiError> wrongInterval(WrongDateIntervalException e) {
         return responseBuilder.createErrorResponse(e.getMessage(), "wrong date interval", HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<ApiError> userNotAttendEvent(UserNotAttendEventException e) {
+        return responseBuilder.createErrorResponse(e.getMessage(), "user did not attend the event", HttpStatus.BAD_REQUEST);
     }
 }

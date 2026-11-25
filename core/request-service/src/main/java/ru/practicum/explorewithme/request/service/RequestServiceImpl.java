@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.ewm.stats.proto.message.ActionTypeProto;
 import ru.practicum.explorewithme.common.dto.EventStatus;
 import ru.practicum.explorewithme.common.dto.RequestStatus;
 import ru.practicum.explorewithme.request.dto.RequestDto;
@@ -16,6 +17,7 @@ import ru.practicum.explorewithme.request.feign.RequestEventClient;
 import ru.practicum.explorewithme.request.feign.dto.RequestEventDto;
 import ru.practicum.explorewithme.request.mapper.RequestMapper;
 import ru.practicum.explorewithme.request.repository.RequestRepository;
+import ru.practicum.explorewithme.stats.client.RecommendationsClient;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,6 +30,7 @@ import java.util.Optional;
 public class RequestServiceImpl implements RequestService {
     private final RequestRepository requestRepository;
     private final RequestEventClient requestEventClient;
+    private final RecommendationsClient recommendationsClient;
 
     @Override
     public List<RequestDto> getRequestsInternal(long eventId) {
@@ -75,6 +78,7 @@ public class RequestServiceImpl implements RequestService {
         }
         Request saved = requestRepository.save(request);
         log.debug("Создан запрос {}", saved);
+        recommendationsClient.collect(userId, eventId, ActionTypeProto.ACTION_REGISTER);
         return RequestMapper.toRequestDto(saved);
     }
 
@@ -146,5 +150,10 @@ public class RequestServiceImpl implements RequestService {
         return requests.stream()
                 .map(RequestMapper::toRequestDto)
                 .toList();
+    }
+
+    @Override
+    public Boolean userAttendEventInternal(long userId, long eventId) {
+        return requestRepository.existsByEventIdAndRequesterIdAndStatus(userId, eventId, RequestStatus.CONFIRMED);
     }
 }
