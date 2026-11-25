@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.explorewithme.common.dto.PublicEventSort;
 import ru.practicum.explorewithme.event.dto.EventDto;
 import ru.practicum.explorewithme.event.dto.EventShortDto;
+import ru.practicum.explorewithme.event.dto.RatedEventDto;
 import ru.practicum.explorewithme.event.service.EventService;
 
 import java.time.LocalDateTime;
@@ -61,13 +62,27 @@ public class PublicEventController {
     }
 
     @GetMapping("/{" + ID_EVENT + "}")
-    public ResponseEntity<EventDto> getEvent(@PathVariable(name = ID_EVENT) long eventId,
-                                             HttpServletRequest request) {
+    public ResponseEntity<EventDto> getEvent(
+            @RequestHeader(name = HEADER_USER_ID) long userId,
+            @PathVariable(name = ID_EVENT) long eventId
+    ) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(eventService.getPublishedEvent(
-                        eventId,
-                        request.getRemoteAddr(),
-                        request.getRequestURI()
-                ));
+                .body(eventService.getPublishedEvent(userId, eventId));
+    }
+
+    @GetMapping(URL_RECOMMENDATIONS)
+    public ResponseEntity<List<RatedEventDto>> getRecommendations(@RequestHeader(name = HEADER_USER_ID) long userId) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(eventService.getRecommendations(userId));
+    }
+
+    @PutMapping("/{" + ID_EVENT + "}" + URL_LIKE)
+    public ResponseEntity<Void> addLike(
+            @RequestHeader(name = HEADER_USER_ID) long userId,
+            @PathVariable(name = ID_EVENT) long eventId
+    ) {
+        eventService.addLike(userId, eventId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(null);
     }
 }

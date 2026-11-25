@@ -3,7 +3,6 @@ package ru.practicum.explorewithme.request.controller;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -19,7 +18,6 @@ import static ru.practicum.explorewithme.common.controller.ControllerConstants.*
 @RequestMapping(path = ACCESS_PRIVATE + "/{" + ID_USER + "}" + URL_REQUESTS)
 @RequiredArgsConstructor
 @Validated
-@Slf4j
 @SuppressWarnings("unused")
 public class PrivateRequestController {
     private final RequestService service;
@@ -27,11 +25,8 @@ public class PrivateRequestController {
     @PostMapping
     public ResponseEntity<RequestDto> addRequest(@PathVariable @NotNull @Positive Long userId,
                                                  @RequestParam(name = "eventId") @NotNull @Positive Long eventId) {
-        RequestDto createdRequest = service.create(userId, eventId);
-        log.info("Создан запрос на участие с именем {}.", createdRequest.getId());
-
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(createdRequest);
+                .body(service.create(userId, eventId));
     }
 
     @GetMapping

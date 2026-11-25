@@ -17,6 +17,12 @@ public interface EventRequestClient {
     @GetMapping(ACCESS_INTERNAL + URL_REQUESTS + "/{" + ID_EVENT + "}")
     List<EventRequestDto> getRequests(@PathVariable(name = ID_EVENT) long eventId);
 
+    @GetMapping(ACCESS_INTERNAL + URL_REQUESTS + URL_EXISTS)
+    Boolean userAttendEvent(
+            @RequestParam(name = PARAM_USER_ID) long userId,
+            @RequestParam(name = PARAM_EVENT_ID) long eventId
+    );
+
     @PutMapping(ACCESS_INTERNAL + URL_REQUESTS)
     List<EventRequestDto> changeRequestStatuses(
             @RequestParam(name = PARAM_IDS) List<Long> ids,

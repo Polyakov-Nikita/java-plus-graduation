@@ -55,11 +55,9 @@ public class PrivateEventControllerTests {
         Location location = new Location(1, 1);
         EventUserDto initiator = EventUserDto.builder()
                 .id(1L)
-                .name("Name")
                 .build();
         EventCategoryDto category = EventCategoryDto.builder()
                 .id(1L)
-                .name("Category")
                 .build();
 
         postRequest = NewEventDto.builder()

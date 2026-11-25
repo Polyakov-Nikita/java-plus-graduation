@@ -1,0 +1,49 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: none
+
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  sql:
+    init:
+      mode: always
+
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:6541/stats
+    username: stats
+    password: stats
+
+kafka:
+  consumer:
+    user-actions:
+      properties:
+        bootstrap.servers: localhost:9092
+        key.deserializer: org.apache.kafka.common.serialization.LongDeserializer
+        group.id: analyzer.user-actions.group
+        client.id: analyzer-user-actions-consumer
+        value.deserializer: ru.practicum.explorewithme.deserialization.UserActionDeserializer
+        enable.auto.commit: false
+
+      attempt-timeout-millis: 1000
+
+      topics:
+        - stats.user-actions.v1
+
+    events-similarity:
+      properties:
+        bootstrap.servers: localhost:9092
+        key.deserializer: org.apache.kafka.common.serialization.LongDeserializer
+        group.id: analyzer.events-similarity.group
+        client.id: analyzer-events-similarity-consumer
+        value.deserializer: ru.practicum.explorewithme.deserialization.EventSimilarityDeserializer
+        enable.auto.commit: false
+
+      attempt-timeout-millis: 1000
+
+      topics:
+        - stats.events-similarity.v1

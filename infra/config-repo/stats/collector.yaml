@@ -1,0 +1,6 @@
+kafka:
+  producer:
+    properties:
+      client.id: collector-producer
+
+    topic: stats.user-actions.v1

@@ -13,6 +13,8 @@ public class ControllerConstants {
     public static final String URL_INCREMENT = "/increment";
     public static final String URL_DECREMENT = "/decrement";
     public static final String URL_EXISTS = "/exists";
+    public static final String URL_RECOMMENDATIONS = "/recommendations";
+    public static final String URL_LIKE = "/like";
     public static final String ID_COMMENT = "commentId";
     public static final String ID_CATEGORY = "catId";
     public static final String ID_COMPILATION = "compId";
@@ -31,6 +33,9 @@ public class ControllerConstants {
     public static final String PARAM_IDS = "ids";
     public static final String PARAM_STATUS = "status";
     public static final String DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
+    public static final String HEADER_USER_ID = "X-EWM-USER-ID";
+    public static final String PARAM_USER_ID = "userId";
+    public static final String PARAM_EVENT_ID = "eventId";
 
     private ControllerConstants() {
     }

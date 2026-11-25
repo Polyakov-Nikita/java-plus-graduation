@@ -36,6 +36,4 @@ public class EventDto {
     @JsonProperty("state")
     private EventStatus status;
     private String title;
-    @Setter
-    private long views;
 }

@@ -7,5 +7,4 @@ import lombok.Data;
 @Data
 public class EventUserDto {
     private Long id;
-    private String name;
 }

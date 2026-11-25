@@ -30,6 +30,15 @@ public class InternalRequestController {
                 .body(service.getRequestsInternal(eventId));
     }
 
+    @GetMapping(URL_EXISTS)
+    public ResponseEntity<Boolean> userAttendEvent(
+            @RequestParam(name = PARAM_USER_ID) long userId,
+            @RequestParam(name = PARAM_EVENT_ID) long eventId
+    ) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(service.userAttendEventInternal(userId, eventId));
+    }
+
     @PutMapping
     public ResponseEntity<List<RequestDto>> changeRequestStatuses(
             @RequestParam(name = PARAM_IDS) List<Long> ids,

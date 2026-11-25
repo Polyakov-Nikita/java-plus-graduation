@@ -12,8 +12,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
-import ru.practicum.explorewithme.StatsClient;
 import ru.practicum.explorewithme.common.dto.AdminEventUpdateAction;
 import ru.practicum.explorewithme.common.dto.EventStatus;
 import ru.practicum.explorewithme.common.dto.RequestStatus;
@@ -31,7 +29,6 @@ import ru.practicum.explorewithme.event.feign.dto.EventRequestDto;
 import ru.practicum.explorewithme.event.feign.dto.EventUserDto;
 import ru.practicum.explorewithme.event.repository.EventRepository;
 import ru.practicum.explorewithme.event.repository.specification.AdminEventSearchSpecification;
-import ru.practicum.explorewithme.stats.ViewStatsResponse;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -62,9 +59,6 @@ class PrivateEventServiceTests {
 
     @Mock
     private EventRequestClient eventRequestClient;
-
-    @Mock
-    private StatsClient statsClient;
 
     @Mock
     private AdminEventSearchSpecification spec;
@@ -104,7 +98,7 @@ class PrivateEventServiceTests {
     }
 
     @Test
-    void getEvents_returnsListWithStats() {
+    void getEvents_returnsList() {
         int from = 0;
         int size = 5;
 
@@ -112,29 +106,15 @@ class PrivateEventServiceTests {
 
         List<Event> events = List.of(event);
 
-        String targetUri = "/events/" + event.getId();
-
-        ViewStatsResponse stats = new ViewStatsResponse(null, targetUri, 7L);
-        List<ViewStatsResponse> statsList = List.of(stats);
-
         when(eventRepository.findByInitiatorId(eq(USER_ID), any(Pageable.class)))
                 .thenReturn(events);
-
-        when(statsClient.getStatistics(
-                any(LocalDateTime.class),
-                any(LocalDateTime.class),
-                anyList(),
-                eq(true)))
-                .thenReturn(statsList);
 
         List<EventDto> result = eventService.getEvents(USER_ID, from, size);
 
         assertThat(result).hasSize(1);
         assertThat(result.getFirst().getId()).isEqualTo(event.getId());
-        assertThat(result.getFirst().getViews()).isEqualTo(7L);
 
         verify(eventRepository).findByInitiatorId(eq(USER_ID), any(Pageable.class));
-        verify(statsClient).getStatistics(any(), any(), any(), eq(true));
     }
 
     @Test
@@ -161,21 +141,13 @@ class PrivateEventServiceTests {
     void getEvent_returnsEventDtoWithStats() {
         Event event = createTestEvent(EVENT_ID, USER_ID, CATEGORY_ID, EventStatus.PENDING);
 
-        String uri = "/events/" + EVENT_ID;
-
-        ViewStatsResponse stats = new ViewStatsResponse(null, uri, 5L);
-
         when(eventRepository.findByIdAndInitiatorId(EVENT_ID, USER_ID)).thenReturn(Optional.of(event));
-        when(statsClient.getStatistics(any(LocalDateTime.class), any(LocalDateTime.class), anyList(), eq(true)))
-                .thenReturn(List.of(stats));
 
         EventDto result = eventService.getEvent(USER_ID, EVENT_ID);
 
         assertThat(result.getId()).isEqualTo(EVENT_ID);
-        assertThat(result.getViews()).isEqualTo(5L);
 
         verify(eventRepository).findByIdAndInitiatorId(EVENT_ID, USER_ID);
-        verify(statsClient).getStatistics(any(), any(), anyList(), eq(true));
     }
 
     @Test
@@ -193,11 +165,6 @@ class PrivateEventServiceTests {
 
         when(eventRepository.findByIdAndInitiatorId(EVENT_ID, USER_ID)).thenReturn(Optional.of(existingEvent));
         when(eventRepository.save(existingEvent)).thenReturn(existingEvent);
-
-        String uri = "/events/" + EVENT_ID;
-        ViewStatsResponse stats = new ViewStatsResponse(null, uri, 3L);
-        when(statsClient.getStatistics(any(LocalDateTime.class), any(LocalDateTime.class), anyList(), eq(true)))
-                .thenReturn(List.of(stats));
 
         EventDto result = eventService.updateEvent(USER_ID, EVENT_ID, update);
 
@@ -228,10 +195,6 @@ class PrivateEventServiceTests {
 
         when(eventRepository.findByIdAndInitiatorId(EVENT_ID, USER_ID)).thenReturn(Optional.of(existingEvent));
         when(eventRepository.save(existingEvent)).thenReturn(existingEvent);
-
-        String uri = "/events/" + EVENT_ID;
-        ViewStatsResponse stats = new ViewStatsResponse(null, uri, 0L);
-        when(statsClient.getStatistics(any(), any(), anyList(), eq(true))).thenReturn(List.of(stats));
 
         EventDto result = eventService.updateEvent(USER_ID, EVENT_ID, update);
 
@@ -322,18 +285,6 @@ class PrivateEventServiceTests {
         Event event = createTestEvent(EVENT_ID, USER_ID, CATEGORY_ID, EventStatus.PUBLISHED);
         event.setParticipantLimit(0);
         event.setRequestModeration(false);
-        EventDto eventDto = EventDto.builder()
-                .id(EVENT_ID)
-                .build();
-        EventUserDto requester1 = EventUserDto.builder()
-                .id(1L)
-                .build();
-        EventUserDto requester2 = EventUserDto.builder()
-                .id(2L)
-                .build();
-        EventUserDto requester3 = EventUserDto.builder()
-                .id(3L)
-                .build();
 
         UpdateRequestStatusDto update = createTestUpdateRequestStatusDto(ids, RequestStatus.CONFIRMED);
 
@@ -369,15 +320,8 @@ class PrivateEventServiceTests {
 
         Page<Event> page = new PageImpl<>(pageContent, PageRequest.of(0, size), 25L);
 
-        when(eventRepository.findAll(any(Specification.class), any(Pageable.class)))
+        when(eventRepository.findAll(any(AdminEventSearchSpecification.class), any(Pageable.class)))
                 .thenReturn(page);
-
-        ViewStatsResponse s1 = new ViewStatsResponse(null, "/events/1", 10L);
-        ViewStatsResponse s2 = new ViewStatsResponse(null, "/events/2", 20L);
-        List<ViewStatsResponse> stats = List.of(s1, s2);
-
-        when(statsClient.getStatistics(any(), any(), anyList(), anyBoolean()))
-                .thenReturn(stats);
 
         List<EventDto> result = eventService.searchEvents(users, states, categories, rangeStart, rangeEnd, from, size);
 
@@ -385,11 +329,8 @@ class PrivateEventServiceTests {
         assertThat(result.get(0).getId()).isEqualTo(1L);
         assertThat(result.get(1).getId()).isEqualTo(2L);
 
-        assertThat(result.get(0).getViews()).isEqualTo(10L);
-        assertThat(result.get(1).getViews()).isEqualTo(20L);
-
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
-        verify(eventRepository).findAll(any(Specification.class), pageableCaptor.capture());
+        verify(eventRepository).findAll(any(AdminEventSearchSpecification.class), pageableCaptor.capture());
 
         Pageable captured = pageableCaptor.getValue();
         assertThat(captured.getOffset()).isEqualTo(5);
@@ -407,7 +348,7 @@ class PrivateEventServiceTests {
         int size = 5;
 
         Page<Event> emptyPage = new PageImpl<>(Collections.emptyList());
-        when(eventRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(emptyPage);
+        when(eventRepository.findAll(any(AdminEventSearchSpecification.class), any(Pageable.class))).thenReturn(emptyPage);
 
         List<EventDto> result = eventService.searchEvents(users, states, categories, rangeStart, rangeEnd, from, size);
 
@@ -425,9 +366,6 @@ class PrivateEventServiceTests {
 
         AdminUpdateEventDto body = createUpdateEventDto(AdminEventUpdateAction.PUBLISH_EVENT);
 
-        ViewStatsResponse stats = new ViewStatsResponse(null, "/events/" + eventId, 42L);
-        when(statsClient.getStatistics(any(), any(), anyList(), anyBoolean())).thenReturn(List.of(stats));
-
         when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
         when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -435,7 +373,6 @@ class PrivateEventServiceTests {
 
         assertThat(result.getId()).isEqualTo(eventId);
         assertThat(result.getStatus()).isEqualTo(EventStatus.PUBLISHED);
-        assertThat(result.getViews()).isEqualTo(42L);
 
         verify(eventRepository).save(event);
         verifyNoMoreInteractions(eventRepository);
@@ -472,8 +409,6 @@ class PrivateEventServiceTests {
         Event event = createTestEvent(eventId, 1L, 3L, EventStatus.PENDING);
         AdminUpdateEventDto body = createUpdateEventDto(AdminEventUpdateAction.REJECT_EVENT);
 
-        ViewStatsResponse stats = new ViewStatsResponse(null, "/events/" + eventId, 5L);
-        when(statsClient.getStatistics(any(), any(), anyList(), anyBoolean())).thenReturn(List.of(stats));
         when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
         when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -509,28 +444,12 @@ class PrivateEventServiceTests {
     private EventCategoryDto createTestCategory(long categoryId) {
         return EventCategoryDto.builder()
                 .id(categoryId)
-                .name("Test Category")
                 .build();
     }
 
     private EventUserDto createTestUser(long userId) {
         return EventUserDto.builder()
                 .id(userId)
-                .name("Test User")
-                .build();
-    }
-
-    private NewEventDto createTestNewEventDto(Long categoryId, LocalDateTime time) {
-        return NewEventDto.builder()
-                .annotation("Test annotation for event creation. It must be at least 20 characters long, so we are adding some extra text here to meet the requirement.")
-                .category(categoryId)
-                .description("Detailed description of the event. Validation requires minimum 20 characters, so this sentence is intentionally long enough to pass the Size constraint.")
-                .eventDate(time)
-                .location(new Location(55.7558, 37.6176))
-                .paid(false)
-                .participantLimit(10)
-                .requestModeration(true)
-                .title("Test Event Title")
                 .build();
     }
 

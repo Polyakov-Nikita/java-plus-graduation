@@ -1,6 +1,23 @@
 server:
   port: 0
 
+grpc:
+  server:
+    port: 0
+
+  client:
+    collector:
+      address: 'discovery:///collector'
+      enableKeepAlive: true
+      keepAliveWithoutCalls: true
+      negotiationType: plaintext
+
+    analyzer:
+      address: 'discovery:///analyzer'
+      enableKeepAlive: true
+      keepAliveWithoutCalls: true
+      negotiationType: plaintext
+
 logging:
   level:
     org:
@@ -12,3 +29,25 @@ spring:
   main:
     banner-mode: off
     log-startup-info: false
+
+score:
+  viewScore: 0.4
+  registerScore: 0.8
+  likeScore: 1.0
+
+kafka:
+  producer:
+    properties:
+      bootstrap.servers: localhost:9092
+      key.serializer: org.apache.kafka.common.serialization.LongSerializer
+      value.serializer: ru.practicum.explorewithme.serialization.AvroSerializer
+
+    closeDurationSeconds: 10
+
+  consumer:
+    properties:
+      bootstrap.servers: localhost:9092
+      key.deserializer: org.apache.kafka.common.serialization.LongDeserializer
+      enable.auto.commit: false
+
+    attempt-timeout-millis: 1000
